@@ -2,6 +2,8 @@
 EEG Preprocessing Pipeline for Upper Limb Movement Classification
 Based on Gigascience 2020 Dataset
 
+MODIFIED VERSION: Saves each configuration immediately after processing
+
 Includes ICA-based EOG artifact removal as described in the paper.
 
 Prepares data for:
@@ -828,6 +830,56 @@ class EEGPreprocessor:
         
         return processed
     
+    def _save_single_config(self, config_name: str, file_list: List[Dict]):
+        """
+        Save a single configuration immediately after processing.
+        
+        Parameters:
+        -----------
+        config_name : str
+            Configuration name (e.g., 'csp_lda', 'ml_features', 'cnn')
+        file_list : list
+            List of processed file dictionaries
+        """
+        print(f"\n{'='*70}")
+        print(f"SAVING {config_name.upper()} DATA")
+        print(f"{'='*70}")
+        
+        # Prepare data based on model type
+        if config_name == 'csp_lda':
+            X, y = self.prepare_for_csp_lda(file_list)
+        elif config_name == 'ml_features':
+            X, y = self.prepare_for_ml(file_list)
+        elif config_name == 'cnn':
+            X, y = self.prepare_for_cnn(file_list)
+        else:
+            print(f"  Unknown config: {config_name}, skipping")
+            return
+        
+        # Save
+        output_path = self.output_dir / f'{config_name}_data.npz'
+        
+        save_dict = {'X': X, 'y': y}
+        
+        # Aggregate metadata
+        metadata = {
+            'n_files': len(file_list),
+            'n_trials': len(y),
+            'n_classes': len(np.unique(y)),
+            'channel_names': file_list[0]['channel_names'],
+            'fs': self.fs,
+            'filter': file_list[0]['metadata']['filter'],
+            'ica_artifact_removal': self.use_ica_artifact_removal,
+            'artifact_removal_stats': self.artifact_removal_stats.copy()
+        }
+        save_dict['metadata'] = metadata
+        
+        np.savez_compressed(output_path, **save_dict)
+        
+        print(f"  ✓ Saved to: {output_path}")
+        print(f"  File size: {output_path.stat().st_size / 1e6:.1f} MB")
+        print(f"{'='*70}\n")
+    
     def process_dataset(
         self,
         subjects: Optional[List[str]] = None,
@@ -836,6 +888,7 @@ class EEGPreprocessor:
     ) -> Dict[str, List[Dict]]:
         """
         Process entire dataset with different filter configurations.
+        Each configuration is saved immediately after processing.
         
         Parameters:
         -----------
@@ -931,6 +984,10 @@ class EEGPreprocessor:
             pbar.close()
             
             print(f"\n{config_name}: Successfully processed {processed_count}/{total_files} files")
+            
+            # SAVE THIS CONFIGURATION IMMEDIATELY
+            if all_processed[config_name]:
+                self._save_single_config(config_name, all_processed[config_name])
         
         print(f"\n{'='*70}")
         print(f"PROCESSING COMPLETE")
@@ -1036,6 +1093,9 @@ class EEGPreprocessor:
         """
         Save preprocessed data to disk.
         
+        DEPRECATED: This method is kept for backward compatibility.
+        Use process_dataset() instead, which saves each config immediately.
+        
         Parameters:
         -----------
         all_processed : dict
@@ -1043,55 +1103,9 @@ class EEGPreprocessor:
         include_metadata : bool
             Whether to save metadata alongside data
         """
-        print(f"\n{'='*70}")
-        print(f"SAVING PREPROCESSED DATA")
-        print(f"{'='*70}")
-        
-        for config_name, file_list in all_processed.items():
-            if not file_list:
-                print(f"\nWarning: No data for {config_name}, skipping")
-                continue
-            
-            print(f"\n{config_name}:")
-            
-            # Prepare data based on model type
-            if config_name == 'csp_lda':
-                X, y = self.prepare_for_csp_lda(file_list)
-            elif config_name == 'ml_features':
-                X, y = self.prepare_for_ml(file_list)
-            elif config_name == 'cnn':
-                X, y = self.prepare_for_cnn(file_list)
-            else:
-                print(f"  Unknown config: {config_name}, skipping")
-                continue
-            
-            # Save
-            output_path = self.output_dir / f'{config_name}_data.npz'
-            
-            save_dict = {'X': X, 'y': y}
-            
-            if include_metadata:
-                # Aggregate metadata
-                metadata = {
-                    'n_files': len(file_list),
-                    'n_trials': len(y),
-                    'n_classes': len(np.unique(y)),
-                    'channel_names': file_list[0]['channel_names'],
-                    'fs': self.fs,
-                    'filter': file_list[0]['metadata']['filter'],
-                    'ica_artifact_removal': self.use_ica_artifact_removal,
-                    'artifact_removal_stats': self.artifact_removal_stats
-                }
-                save_dict['metadata'] = metadata
-            
-            np.savez_compressed(output_path, **save_dict)
-            
-            print(f"  Saved to: {output_path}")
-            print(f"  File size: {output_path.stat().st_size / 1e6:.1f} MB")
-        
-        print(f"\n{'='*70}")
-        print(f"ALL DATA SAVED")
-        print(f"{'='*70}")
+        print(f"\nWARNING: save_preprocessed() is deprecated.")
+        print(f"Data is now saved automatically during process_dataset().")
+        print(f"No action needed.\n")
 
 
 def main():
@@ -1142,6 +1156,7 @@ def main():
     print(f"{'='*70}\n")
     
     # Process all data (or specify subset)
+    # Data is saved automatically during process_dataset()
     all_processed = preprocessor.process_dataset(
         subjects=args.subjects,
         sessions=args.sessions,
@@ -1151,9 +1166,6 @@ def main():
             'cnn': (1, 40)
         }
     )
-    
-    # Save preprocessed data
-    preprocessor.save_preprocessed(all_processed)
     
     print("\nPreprocessing complete!")
     print(f"Preprocessed data saved to: {preprocessor.output_dir}")
