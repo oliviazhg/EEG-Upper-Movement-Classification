@@ -113,9 +113,16 @@ class CSPLDAExperiment:
         else:
             raise ValueError(f"Unsupported file format: {self.data_path.suffix}")
         
+        # Remove rest class
+        mask = y != 0 # Assuming '0' is rest class
+        X = X[mask]
+        y = y[mask]
+        y = y - 1  # Renumber classes 1-11 → 0-10
+
         print(f"Data loaded: X shape = {X.shape}, y shape = {y.shape}")
         print(f"Number of classes: {len(np.unique(y))}")
         print(f"Class distribution: {np.bincount(y)}")
+        print(f"Rest class removed. Classes now: 0-10")        
         
         return X, y
     
