@@ -11,7 +11,9 @@ import numpy as np
 
 # Data parameters
 DATA_CONFIG = {
-    'subject_id': 1,  # Subject to use for experiments
+    # Path to the ml_features_data.npz file containing ALL 25 subjects
+    'data_file': '/home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/PreprocessedData2',
+    
     'exclude_rest': True,  # Exclude rest class (label 0)
     'train_split': 0.70,
     'val_split': 0.15,
