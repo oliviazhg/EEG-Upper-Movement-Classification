@@ -1,0 +1,510 @@
+EEG Preprocessor initialized
+EEG data directory: /home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/EEG_ConvertedData
+EOG data directory: /home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/EOG_ConvertedData
+Output directory: /home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/PreprocessedData
+Sampling rate: 2500 Hz
+Trial window: -1.0s to +2.0s
+ICA artifact removal: ENABLED
+ICA correlation threshold: 0.8
+
+======================================================================
+PREPROCESSING CONFIGURATION
+======================================================================
+EEG Directory: /home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/EEG_ConvertedData
+EOG Directory: /home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/EOG_ConvertedData
+Output Directory: /home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/PreprocessedData
+ICA Artifact Removal: ENABLED
+ICA Correlation Threshold: 0.8
+Subjects: All (sub1-sub25)
+Sessions: All (session1-session3)
+======================================================================
+
+
+======================================================================
+PROCESSING DATASET
+======================================================================
+Files per configuration: 225
+Configurations: 3
+Total operations: 675
+ICA Artifact Removal: ENABLED
+======================================================================
+
+Configurations:   0%|          | 0/3 [00:00<?, ?it/s]
+======================================================================
+CONFIGURATION: CSP_LDA
+Filter: 8-30 Hz
+======================================================================
+
+
+Processing csp_lda:   0%|          | 0/225 [00:00<?, ?file/s][A
+Processing csp_lda:   0%|          | 1/225 [00:11<42:09, 11.29s/file][A
+Processing csp_lda:   1%|          | 2/225 [00:31<1:01:19, 16.50s/file][A
+Processing csp_lda:   1%|▏         | 3/225 [00:38<45:17, 12.24s/file]  [A
+Processing csp_lda:   2%|▏         | 4/225 [00:47<40:30, 11.00s/file][A
+Processing csp_lda:   2%|▏         | 5/225 [01:06<50:06, 13.67s/file][A
+Processing csp_lda:   3%|▎         | 6/225 [01:14<43:38, 11.96s/file][A
+Processing csp_lda:   3%|▎         | 7/225 [01:26<43:15, 11.90s/file][A
+Processing csp_lda:   4%|▎         | 8/225 [01:48<54:16, 15.01s/file][A
+Processing csp_lda:   4%|▍         | 9/225 [01:55<45:42, 12.69s/file][A
+Processing csp_lda:   4%|▍         | 10/225 [02:05<41:59, 11.72s/file][A
+Processing csp_lda:   5%|▍         | 11/225 [02:25<50:52, 14.26s/file][A
+Processing csp_lda:   5%|▌         | 12/225 [02:31<42:23, 11.94s/file][A
+Processing csp_lda:   6%|▌         | 13/225 [02:42<40:41, 11.51s/file][A
+Processing csp_lda:   6%|▌         | 14/225 [03:01<48:29, 13.79s/file][A
+Processing csp_lda:   7%|▋         | 16/225 [03:11<33:56,  9.74s/file][A
+Processing csp_lda:   8%|▊         | 17/225 [03:28<40:10, 11.59s/file][A
+Processing csp_lda:   8%|▊         | 18/225 [03:36<36:21, 10.54s/file][A
+Processing csp_lda:   8%|▊         | 19/225 [03:46<35:37, 10.38s/file][A
+Processing csp_lda:   9%|▉         | 20/225 [04:03<42:18, 12.39s/file][A
+Processing csp_lda:   9%|▉         | 21/225 [04:09<35:14, 10.37s/file][A
+Processing csp_lda:  10%|▉         | 22/225 [04:17<33:14,  9.83s/file][A
+Processing csp_lda:  10%|█         | 23/225 [04:34<40:01, 11.89s/file][A
+Processing csp_lda:  11%|█         | 24/225 [04:41<34:48, 10.39s/file][A
+Processing csp_lda:  11%|█         | 25/225 [04:52<35:30, 10.65s/file][A
+Processing csp_lda:  12%|█▏        | 26/225 [05:10<42:08, 12.71s/file][A
+Processing csp_lda:  12%|█▏        | 27/225 [05:16<35:31, 10.76s/file][A
+Processing csp_lda:  12%|█▏        | 28/225 [05:26<34:16, 10.44s/file][A
+Processing csp_lda:  13%|█▎        | 29/225 [05:44<41:24, 12.68s/file][A
+Processing csp_lda:  13%|█▎        | 30/225 [05:50<35:05, 10.80s/file][A
+Processing csp_lda:  14%|█▍        | 31/225 [05:59<33:22, 10.32s/file][A
+Processing csp_lda:  14%|█▍        | 32/225 [06:18<41:45, 12.98s/file][A
+Processing csp_lda:  15%|█▍        | 33/225 [06:25<35:18, 11.03s/file][A
+Processing csp_lda:  15%|█▌        | 34/225 [06:35<34:25, 10.82s/file][A
+Processing csp_lda:  16%|█▌        | 35/225 [06:52<40:12, 12.70s/file][A
+Processing csp_lda:  16%|█▌        | 36/225 [06:59<34:49, 11.05s/file][A
+Processing csp_lda:  16%|█▋        | 37/225 [07:09<33:07, 10.57s/file][A
+Processing csp_lda:  17%|█▋        | 38/225 [07:28<41:00, 13.16s/file][A
+Processing csp_lda:  17%|█▋        | 39/225 [07:35<34:40, 11.19s/file][A
+Processing csp_lda:  18%|█▊        | 40/225 [07:45<33:25, 10.84s/file][A
+Processing csp_lda:  18%|█▊        | 41/225 [08:03<40:24, 13.18s/file][A
+Processing csp_lda:  19%|█▊        | 42/225 [08:11<34:42, 11.38s/file][A
+Processing csp_lda:  19%|█▉        | 43/225 [08:20<32:50, 10.83s/file][A
+Processing csp_lda:  20%|█▉        | 44/225 [08:42<42:52, 14.21s/file][A
+Processing csp_lda:  20%|██        | 45/225 [08:50<36:31, 12.18s/file][A
+Processing csp_lda:  20%|██        | 46/225 [08:59<33:55, 11.37s/file][A
+Processing csp_lda:  21%|██        | 47/225 [09:18<40:22, 13.61s/file][A
+Processing csp_lda:  21%|██▏       | 48/225 [09:26<35:23, 12.00s/file][A
+Processing csp_lda:  22%|██▏       | 49/225 [09:38<34:48, 11.87s/file][A
+Processing csp_lda:  22%|██▏       | 50/225 [09:56<40:29, 13.88s/file][A
+Processing csp_lda:  23%|██▎       | 51/225 [10:03<34:07, 11.77s/file][A
+Processing csp_lda:  23%|██▎       | 52/225 [10:14<33:18, 11.55s/file][A
+Processing csp_lda:  24%|██▎       | 53/225 [10:36<42:10, 14.71s/file][A
+Processing csp_lda:  24%|██▍       | 54/225 [10:43<34:58, 12.27s/file][A
+Processing csp_lda:  24%|██▍       | 55/225 [10:54<33:35, 11.85s/file][A
+Processing csp_lda:  25%|██▍       | 56/225 [11:13<39:34, 14.05s/file][A
+Processing csp_lda:  25%|██▌       | 57/225 [11:20<33:08, 11.84s/file][A
+Processing csp_lda:  26%|██▌       | 58/225 [11:29<30:39, 11.02s/file][A
+Processing csp_lda:  26%|██▌       | 59/225 [11:47<36:56, 13.35s/file][A
+Processing csp_lda:  27%|██▋       | 60/225 [11:54<30:59, 11.27s/file][A
+Processing csp_lda:  27%|██▋       | 61/225 [12:03<29:06, 10.65s/file][A
+Processing csp_lda:  28%|██▊       | 62/225 [12:22<35:47, 13.17s/file][A
+Processing csp_lda:  28%|██▊       | 63/225 [12:30<31:00, 11.49s/file][A
+Processing csp_lda:  28%|██▊       | 64/225 [12:39<29:11, 10.88s/file][A
+Processing csp_lda:  29%|██▉       | 65/225 [12:59<35:52, 13.45s/file][A
+Processing csp_lda:  29%|██▉       | 66/225 [13:06<30:36, 11.55s/file][A
+Processing csp_lda:  30%|██▉       | 67/225 [13:15<28:17, 10.74s/file][A
+Processing csp_lda:  30%|███       | 68/225 [13:32<33:18, 12.73s/file][A
+Processing csp_lda:  31%|███       | 69/225 [13:39<28:48, 11.08s/file][A
+Processing csp_lda:  31%|███       | 70/225 [13:50<28:46, 11.14s/file][A
+Processing csp_lda:  32%|███▏      | 71/225 [14:09<34:23, 13.40s/file][A
+Processing csp_lda:  32%|███▏      | 72/225 [14:16<29:05, 11.41s/file][A
+Processing csp_lda:  32%|███▏      | 73/225 [14:25<27:13, 10.75s/file][A
+Processing csp_lda:  33%|███▎      | 74/225 [14:44<33:09, 13.18s/file][A
+Processing csp_lda:  33%|███▎      | 75/225 [14:52<29:04, 11.63s/file][A
+Processing csp_lda:  34%|███▍      | 76/225 [15:05<29:51, 12.02s/file][A
+Processing csp_lda:  34%|███▍      | 77/225 [15:22<33:41, 13.66s/file][A
+Processing csp_lda:  35%|███▍      | 78/225 [15:29<28:08, 11.49s/file][A
+Processing csp_lda:  35%|███▌      | 79/225 [15:38<26:13, 10.78s/file][A
+Processing csp_lda:  36%|███▌      | 80/225 [15:56<31:05, 12.87s/file][A
+Processing csp_lda:  36%|███▌      | 81/225 [16:02<26:25, 11.01s/file][A
+Processing csp_lda:  36%|███▋      | 82/225 [16:14<26:24, 11.08s/file][A
+Processing csp_lda:  37%|███▋      | 83/225 [16:35<33:21, 14.10s/file][A
+Processing csp_lda:  37%|███▋      | 84/225 [16:47<32:08, 13.67s/file][A
+Processing csp_lda:  38%|███▊      | 85/225 [16:58<29:28, 12.63s/file][A
+Processing csp_lda:  38%|███▊      | 86/225 [17:16<33:27, 14.44s/file][A
+Processing csp_lda:  39%|███▊      | 87/225 [17:23<28:00, 12.18s/file][A
+Processing csp_lda:  39%|███▉      | 88/225 [17:33<25:55, 11.35s/file][A
+Processing csp_lda:  40%|███▉      | 89/225 [17:53<31:36, 13.94s/file][A
+Processing csp_lda:  40%|████      | 90/225 [18:00<26:40, 11.85s/file][A
+Processing csp_lda:  40%|████      | 91/225 [18:09<25:02, 11.22s/file][A
+Processing csp_lda:  41%|████      | 92/225 [18:27<29:03, 13.11s/file][A
+Processing csp_lda:  41%|████▏     | 93/225 [18:34<24:46, 11.26s/file][A
+Processing csp_lda:  42%|████▏     | 94/225 [18:44<23:51, 10.93s/file][A
+Processing csp_lda:  42%|████▏     | 95/225 [19:02<28:18, 13.06s/file][A
+Processing csp_lda:  43%|████▎     | 96/225 [19:09<24:00, 11.17s/file][A
+Processing csp_lda:  43%|████▎     | 97/225 [19:18<22:42, 10.64s/file][A
+Processing csp_lda:  44%|████▎     | 98/225 [19:37<27:39, 13.06s/file][A
+Processing csp_lda:  44%|████▍     | 99/225 [19:44<23:31, 11.20s/file][A
+Processing csp_lda:  44%|████▍     | 100/225 [19:56<24:00, 11.52s/file][A
+Processing csp_lda:  45%|████▍     | 101/225 [20:16<29:22, 14.21s/file][A
+Processing csp_lda:  45%|████▌     | 102/225 [20:30<28:25, 13.87s/file][A
+Processing csp_lda:  46%|████▌     | 103/225 [20:40<26:14, 12.90s/file][A
+Processing csp_lda:  46%|████▌     | 104/225 [20:59<29:54, 14.83s/file][A
+Processing csp_lda:  47%|████▋     | 105/225 [21:07<25:00, 12.51s/file][A
+Processing csp_lda:  47%|████▋     | 106/225 [21:16<23:07, 11.66s/file][A
+Processing csp_lda:  48%|████▊     | 107/225 [21:36<27:36, 14.04s/file][A
+Processing csp_lda:  48%|████▊     | 108/225 [21:42<23:03, 11.82s/file][A
+Processing csp_lda:  48%|████▊     | 109/225 [21:52<21:28, 11.11s/file][A
+Processing csp_lda:  49%|████▉     | 110/225 [22:10<25:28, 13.29s/file][A
+Processing csp_lda:  49%|████▉     | 111/225 [22:16<20:43, 10.90s/file][A
+Processing csp_lda:  50%|████▉     | 112/225 [22:26<20:08, 10.70s/file][A
+Processing csp_lda:  50%|█████     | 113/225 [22:44<23:58, 12.84s/file][A
+Processing csp_lda:  51%|█████     | 114/225 [22:51<20:32, 11.11s/file][A
+Processing csp_lda:  51%|█████     | 115/225 [22:58<18:25, 10.05s/file][A
+Processing csp_lda:  52%|█████▏    | 116/225 [23:11<19:50, 10.92s/file][A
+Processing csp_lda:  52%|█████▏    | 117/225 [23:17<16:59,  9.44s/file][A
+Processing csp_lda:  52%|█████▏    | 118/225 [23:30<18:46, 10.53s/file][A
+Processing csp_lda:  53%|█████▎    | 119/225 [23:49<22:51, 12.94s/file][A
+Processing csp_lda:  53%|█████▎    | 120/225 [24:15<29:32, 16.88s/file][A
+Processing csp_lda:  54%|█████▍    | 121/225 [24:24<25:08, 14.50s/file][A
+Processing csp_lda:  54%|█████▍    | 122/225 [24:42<26:50, 15.64s/file][A
+Processing csp_lda:  55%|█████▍    | 123/225 [24:49<21:54, 12.89s/file][A
+Processing csp_lda:  55%|█████▌    | 124/225 [24:58<19:44, 11.73s/file][A
+Processing csp_lda:  56%|█████▌    | 125/225 [25:15<22:32, 13.53s/file][A
+Processing csp_lda:  56%|█████▌    | 126/225 [25:22<18:49, 11.41s/file][A
+Processing csp_lda:  56%|█████▋    | 127/225 [25:31<17:37, 10.79s/file][A
+Processing csp_lda:  57%|█████▋    | 128/225 [25:50<21:24, 13.25s/file][A
+Processing csp_lda:  57%|█████▋    | 129/225 [25:57<17:51, 11.16s/file][A
+Processing csp_lda:  58%|█████▊    | 130/225 [26:06<16:45, 10.59s/file][A
+Processing csp_lda:  58%|█████▊    | 131/225 [26:24<20:19, 12.97s/file][A
+Processing csp_lda:  59%|█████▊    | 132/225 [26:32<17:34, 11.34s/file][A
+Processing csp_lda:  59%|█████▉    | 133/225 [26:41<16:32, 10.78s/file][A
+Processing csp_lda:  60%|█████▉    | 134/225 [27:02<20:47, 13.71s/file][A
+Processing csp_lda:  60%|██████    | 135/225 [27:08<17:21, 11.57s/file][A
+Processing csp_lda:  60%|██████    | 136/225 [27:19<16:38, 11.22s/file][A
+Processing csp_lda:  61%|██████    | 137/225 [27:38<20:04, 13.69s/file][A
+Processing csp_lda:  61%|██████▏   | 138/225 [27:59<23:05, 15.93s/file][A
+Processing csp_lda:  62%|██████▏   | 139/225 [28:08<19:38, 13.70s/file][A
+Processing csp_lda:  62%|██████▏   | 140/225 [28:26<21:09, 14.93s/file][A
+Processing csp_lda:  63%|██████▎   | 141/225 [28:33<17:42, 12.65s/file][A
+Processing csp_lda:  63%|██████▎   | 142/225 [28:42<15:56, 11.53s/file][A
+Processing csp_lda:  64%|██████▎   | 143/225 [28:59<18:04, 13.22s/file][A
+Processing csp_lda:  64%|██████▍   | 144/225 [29:05<14:54, 11.04s/file][A
+Processing csp_lda:  64%|██████▍   | 145/225 [29:16<14:48, 11.10s/file][A
+Processing csp_lda:  65%|██████▍   | 146/225 [29:37<18:18, 13.90s/file][A
+Processing csp_lda:  65%|██████▌   | 147/225 [29:57<20:28, 15.75s/file][A
+Processing csp_lda:  66%|██████▌   | 148/225 [30:07<17:57, 14.00s/file][A
+Processing csp_lda:  66%|██████▌   | 149/225 [30:25<19:24, 15.33s/file][A
+Processing csp_lda:  67%|██████▋   | 150/225 [30:30<15:15, 12.21s/file][A
+Processing csp_lda:  67%|██████▋   | 151/225 [30:38<13:26, 10.90s/file][A
+Processing csp_lda:  68%|██████▊   | 152/225 [30:55<15:26, 12.69s/file][A
+Processing csp_lda:  68%|██████▊   | 153/225 [31:00<12:38, 10.53s/file][A
+Processing csp_lda:  68%|██████▊   | 154/225 [31:12<12:44, 10.76s/file][A
+Processing csp_lda:  69%|██████▉   | 155/225 [31:31<15:37, 13.40s/file][A
+Processing csp_lda:  69%|██████▉   | 156/225 [31:43<14:46, 12.85s/file][A
+Processing csp_lda:  70%|██████▉   | 157/225 [31:52<13:18, 11.74s/file][A
+Processing csp_lda:  70%|███████   | 158/225 [32:09<14:58, 13.41s/file][A
+Processing csp_lda:  71%|███████   | 159/225 [32:15<12:11, 11.09s/file][A
+Processing csp_lda:  71%|███████   | 160/225 [32:23<10:58, 10.14s/file][A
+Processing csp_lda:  72%|███████▏  | 161/225 [32:42<13:47, 12.94s/file][A
+Processing csp_lda:  72%|███████▏  | 162/225 [32:48<11:17, 10.76s/file][A
+Processing csp_lda:  72%|███████▏  | 163/225 [32:58<10:49, 10.48s/file][A
+Processing csp_lda:  73%|███████▎  | 164/225 [33:16<13:05, 12.88s/file][A
+Processing csp_lda:  73%|███████▎  | 165/225 [33:23<11:03, 11.06s/file][A
+Processing csp_lda:  74%|███████▍  | 166/225 [33:33<10:28, 10.65s/file][A
+Processing csp_lda:  74%|███████▍  | 167/225 [33:52<12:45, 13.20s/file][A
+Processing csp_lda:  75%|███████▍  | 168/225 [33:59<10:45, 11.32s/file][A
+Processing csp_lda:  75%|███████▌  | 169/225 [34:08<10:04, 10.80s/file][A
+Processing csp_lda:  76%|███████▌  | 170/225 [34:28<12:16, 13.40s/file][A
+Processing csp_lda:  76%|███████▌  | 171/225 [34:35<10:15, 11.40s/file][A
+Processing csp_lda:  76%|███████▋  | 172/225 [34:45<09:46, 11.07s/file][A
+Processing csp_lda:  77%|███████▋  | 173/225 [35:03<11:24, 13.16s/file][A
+Processing csp_lda:  77%|███████▋  | 174/225 [35:11<09:52, 11.62s/file][A
+Processing csp_lda:  78%|███████▊  | 175/225 [35:20<09:08, 10.97s/file][A
+Processing csp_lda:  78%|███████▊  | 176/225 [35:39<10:53, 13.34s/file][A
+Processing csp_lda:  79%|███████▊  | 177/225 [35:46<09:04, 11.35s/file][A
+Processing csp_lda:  79%|███████▉  | 178/225 [35:56<08:30, 10.85s/file][A
+Processing csp_lda:  80%|███████▉  | 179/225 [36:15<10:12, 13.32s/file][A
+Processing csp_lda:  80%|████████  | 180/225 [36:21<08:29, 11.32s/file][A
+Processing csp_lda:  80%|████████  | 181/225 [36:32<08:07, 11.07s/file][A
+Processing csp_lda:  81%|████████  | 182/225 [36:53<10:04, 14.05s/file][A
+Processing csp_lda:  81%|████████▏ | 183/225 [37:00<08:20, 11.91s/file][A
+Processing csp_lda:  82%|████████▏ | 184/225 [37:10<07:43, 11.31s/file][A
+Processing csp_lda:  82%|████████▏ | 185/225 [37:30<09:13, 13.83s/file][A
+Processing csp_lda:  83%|████████▎ | 186/225 [37:36<07:38, 11.77s/file][A
+Processing csp_lda:  83%|████████▎ | 187/225 [37:46<07:06, 11.23s/file][A
+Processing csp_lda:  84%|████████▎ | 188/225 [38:07<08:35, 13.94s/file][A
+Processing csp_lda:  84%|████████▍ | 189/225 [38:13<07:02, 11.74s/file][A
+Processing csp_lda:  84%|████████▍ | 190/225 [38:23<06:24, 11.00s/file][A
+Processing csp_lda:  85%|████████▍ | 191/225 [38:42<07:42, 13.60s/file][A
+Processing csp_lda:  85%|████████▌ | 192/225 [38:50<06:31, 11.86s/file][A
+Processing csp_lda:  86%|████████▌ | 193/225 [38:59<05:50, 10.95s/file][A
+Processing csp_lda:  86%|████████▌ | 194/225 [39:19<07:01, 13.61s/file][A
+Processing csp_lda:  87%|████████▋ | 195/225 [39:26<05:51, 11.72s/file][A
+Processing csp_lda:  87%|████████▋ | 196/225 [39:36<05:20, 11.06s/file][A
+Processing csp_lda:  88%|████████▊ | 197/225 [39:52<05:58, 12.80s/file][A
+Processing csp_lda:  88%|████████▊ | 198/225 [39:58<04:46, 10.60s/file][A
+Processing csp_lda:  88%|████████▊ | 199/225 [40:07<04:27, 10.28s/file][A
+Processing csp_lda:  89%|████████▉ | 200/225 [40:27<05:26, 13.05s/file][A
+Processing csp_lda:  89%|████████▉ | 201/225 [40:35<04:34, 11.43s/file][A
+Processing csp_lda:  90%|████████▉ | 202/225 [40:43<04:01, 10.51s/file][A
+Processing csp_lda:  90%|█████████ | 203/225 [40:59<04:31, 12.32s/file][A
+Processing csp_lda:  91%|█████████ | 204/225 [41:06<03:42, 10.62s/file][A
+Processing csp_lda:  91%|█████████ | 205/225 [41:16<03:27, 10.39s/file][A
+Processing csp_lda:  92%|█████████▏| 206/225 [41:33<03:54, 12.35s/file][A
+Processing csp_lda:  92%|█████████▏| 207/225 [41:39<03:06, 10.39s/file][A
+Processing csp_lda:  92%|█████████▏| 208/225 [41:48<02:52, 10.17s/file][A
+Processing csp_lda:  93%|█████████▎| 209/225 [42:07<03:21, 12.62s/file][A
+Processing csp_lda:  93%|█████████▎| 210/225 [42:13<02:41, 10.80s/file][A
+Processing csp_lda:  94%|█████████▍| 211/225 [42:22<02:24, 10.31s/file][A
+Processing csp_lda:  94%|█████████▍| 212/225 [42:39<02:40, 12.32s/file][A
+Processing csp_lda:  95%|█████████▍| 213/225 [42:46<02:07, 10.60s/file][A
+Processing csp_lda:  95%|█████████▌| 214/225 [42:55<01:52, 10.22s/file][A
+Processing csp_lda:  96%|█████████▌| 215/225 [43:13<02:03, 12.31s/file][A
+Processing csp_lda:  96%|█████████▌| 216/225 [43:19<01:35, 10.58s/file][A
+Processing csp_lda:  96%|█████████▋| 217/225 [43:28<01:20, 10.05s/file][A
+Processing csp_lda:  97%|█████████▋| 218/225 [43:46<01:27, 12.49s/file][A
+Processing csp_lda:  97%|█████████▋| 219/225 [43:52<01:03, 10.54s/file][A
+Processing csp_lda:  98%|█████████▊| 220/225 [44:03<00:52, 10.56s/file][A
+Processing csp_lda:  98%|█████████▊| 221/225 [44:21<00:52, 13.03s/file][A
+Processing csp_lda:  99%|█████████▊| 222/225 [44:28<00:33, 11.11s/file][A
+Processing csp_lda:  99%|█████████▉| 223/225 [44:37<00:20, 10.46s/file][A
+Processing csp_lda: 100%|█████████▉| 224/225 [44:57<00:13, 13.35s/file][A
+Processing csp_lda: 100%|██████████| 225/225 [45:05<00:00, 11.74s/file][AProcessing csp_lda: 100%|██████████| 225/225 [45:05<00:00, 12.02s/file]
+Configurations:  33%|███▎      | 1/3 [2:33:08<5:06:16, 9188.19s/it]
+csp_lda: Successfully processed 224/225 files
+
+======================================================================
+SAVING CSP_LDA DATA
+======================================================================
+
+CSP+LDA data prepared:
+  X shape: (83609, 22, 7500)
+  y shape: (83609,)
+  Classes: [ 0  1  2  3  4  5  6  7  8  9 10 11]
+  ✓ Saved to: /home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/PreprocessedData/csp_lda_data.npz
+  File size: 70940.5 MB
+======================================================================
+
+
+======================================================================
+CONFIGURATION: ML_FEATURES
+Filter: 8-30 Hz
+======================================================================
+
+
+Processing ml_features:   0%|          | 0/225 [00:00<?, ?file/s][A
+Processing ml_features:   0%|          | 1/225 [00:10<40:57, 10.97s/file][A
+Processing ml_features:   1%|          | 2/225 [00:30<59:44, 16.07s/file][A
+Processing ml_features:   1%|▏         | 3/225 [00:37<44:30, 12.03s/file][A
+Processing ml_features:   2%|▏         | 4/225 [00:47<40:47, 11.07s/file][A
+Processing ml_features:   2%|▏         | 5/225 [01:07<52:13, 14.24s/file][A
+Processing ml_features:   3%|▎         | 6/225 [01:14<43:06, 11.81s/file][A
+Processing ml_features:   3%|▎         | 7/225 [01:23<40:11, 11.06s/file][A
+Processing ml_features:   4%|▎         | 8/225 [01:45<52:10, 14.43s/file][A
+Processing ml_features:   4%|▍         | 9/225 [01:52<43:49, 12.18s/file][A
+Processing ml_features:   4%|▍         | 10/225 [02:02<40:39, 11.34s/file][A
+Processing ml_features:   5%|▍         | 11/225 [02:22<49:55, 14.00s/file][A
+Processing ml_features:   5%|▌         | 12/225 [02:28<41:29, 11.69s/file][A
+Processing ml_features:   6%|▌         | 13/225 [02:39<40:15, 11.39s/file][A
+Processing ml_features:   6%|▌         | 14/225 [02:58<48:44, 13.86s/file][A
+Processing ml_features:   7%|▋         | 16/225 [03:08<33:56,  9.74s/file][A
+Processing ml_features:   8%|▊         | 17/225 [03:26<40:32, 11.69s/file][A
+Processing ml_features:   8%|▊         | 18/225 [03:33<36:25, 10.56s/file][A
+Processing ml_features:   8%|▊         | 19/225 [03:41<33:50,  9.86s/file][A
+Processing ml_features:   9%|▉         | 20/225 [04:00<42:08, 12.33s/file][A
+Processing ml_features:   9%|▉         | 21/225 [04:07<36:16, 10.67s/file][A
+Processing ml_features:  10%|▉         | 22/225 [04:15<33:48,  9.99s/file][A
+Processing ml_features:  10%|█         | 23/225 [04:34<42:16, 12.56s/file][A
+Processing ml_features:  11%|█         | 24/225 [04:41<36:39, 10.94s/file][A
+Processing ml_features:  11%|█         | 25/225 [04:50<35:20, 10.60s/file][A
+Processing ml_features:  12%|█▏        | 26/225 [05:09<42:31, 12.82s/file][A
+Processing ml_features:  12%|█▏        | 27/225 [05:15<35:40, 10.81s/file][A
+Processing ml_features:  12%|█▏        | 28/225 [05:25<35:16, 10.75s/file][A
+Processing ml_features:  13%|█▎        | 29/225 [05:43<41:52, 12.82s/file][A
+Processing ml_features:  13%|█▎        | 30/225 [05:49<35:19, 10.87s/file][A
+Processing ml_features:  14%|█▍        | 31/225 [06:00<34:47, 10.76s/file][A
+Processing ml_features:  14%|█▍        | 32/225 [06:19<42:26, 13.19s/file][A
+Processing ml_features:  15%|█▍        | 33/225 [06:25<35:52, 11.21s/file][A
+Processing ml_features:  15%|█▌        | 34/225 [06:35<34:41, 10.90s/file][A
+Processing ml_features:  16%|█▌        | 35/225 [06:53<40:30, 12.79s/file][A
+Processing ml_features:  16%|█▌        | 36/225 [07:00<34:58, 11.10s/file][A
+Processing ml_features:  16%|█▋        | 37/225 [07:09<33:30, 10.70s/file][A
+Processing ml_features:  17%|█▋        | 38/225 [07:29<42:02, 13.49s/file][A
+Processing ml_features:  17%|█▋        | 39/225 [07:36<35:26, 11.43s/file][A
+Processing ml_features:  18%|█▊        | 40/225 [07:46<33:48, 10.97s/file][A
+Processing ml_features:  18%|█▊        | 41/225 [08:07<42:42, 13.93s/file][A
+Processing ml_features:  19%|█▊        | 42/225 [08:16<38:08, 12.51s/file][A
+Processing ml_features:  19%|█▉        | 43/225 [08:27<36:08, 11.91s/file][A
+Processing ml_features:  20%|█▉        | 44/225 [08:47<43:54, 14.55s/file][A
+Processing ml_features:  20%|██        | 45/225 [08:54<36:30, 12.17s/file][A
+Processing ml_features:  20%|██        | 46/225 [09:04<34:05, 11.43s/file][A
+Processing ml_features:  21%|██        | 47/225 [09:21<39:27, 13.30s/file][A
+Processing ml_features:  21%|██▏       | 48/225 [09:28<33:39, 11.41s/file][A
+Processing ml_features:  22%|██▏       | 49/225 [09:39<32:46, 11.17s/file][A
+Processing ml_features:  22%|██▏       | 50/225 [10:00<40:54, 14.03s/file][A
+Processing ml_features:  23%|██▎       | 51/225 [10:06<34:22, 11.85s/file][A
+Processing ml_features:  23%|██▎       | 52/225 [10:16<32:21, 11.22s/file][A
+Processing ml_features:  24%|██▎       | 53/225 [10:35<39:02, 13.62s/file][A
+Processing ml_features:  24%|██▍       | 54/225 [10:42<32:49, 11.51s/file][A
+Processing ml_features:  24%|██▍       | 55/225 [10:51<30:54, 10.91s/file][A
+Processing ml_features:  25%|██▍       | 56/225 [11:11<38:26, 13.65s/file][A
+Processing ml_features:  25%|██▌       | 57/225 [11:18<32:21, 11.56s/file][A
+Processing ml_features:  26%|██▌       | 58/225 [11:28<30:29, 10.95s/file][A
+Processing ml_features:  26%|██▌       | 59/225 [11:48<38:01, 13.74s/file][A
+Processing ml_features:  27%|██▋       | 60/225 [11:55<31:54, 11.60s/file][A
+Processing ml_features:  27%|██▋       | 61/225 [12:04<29:49, 10.91s/file][A
+Processing ml_features:  28%|██▊       | 62/225 [12:24<36:51, 13.57s/file][A
+Processing ml_features:  28%|██▊       | 63/225 [12:32<32:48, 12.15s/file][A
+Processing ml_features:  28%|██▊       | 64/225 [12:43<30:59, 11.55s/file][A
+Processing ml_features:  29%|██▉       | 65/225 [13:02<37:18, 13.99s/file][A
+Processing ml_features:  29%|██▉       | 66/225 [13:12<33:46, 12.75s/file][A
+Processing ml_features:  30%|██▉       | 67/225 [13:21<30:40, 11.65s/file][A
+Processing ml_features:  30%|███       | 68/225 [13:39<35:32, 13.58s/file][A
+Processing ml_features:  31%|███       | 69/225 [13:47<30:23, 11.69s/file][A
+Processing ml_features:  31%|███       | 70/225 [13:56<28:32, 11.05s/file][A
+Processing ml_features:  32%|███▏      | 71/225 [14:16<35:30, 13.83s/file][A
+Processing ml_features:  32%|███▏      | 72/225 [14:24<30:19, 11.89s/file][A
+Processing ml_features:  32%|███▏      | 73/225 [14:33<28:17, 11.17s/file][A
+Processing ml_features:  33%|███▎      | 74/225 [14:51<33:02, 13.13s/file][A
+Processing ml_features:  33%|███▎      | 75/225 [14:58<28:02, 11.22s/file][A
+Processing ml_features:  34%|███▍      | 76/225 [15:09<27:32, 11.09s/file][A
+Processing ml_features:  34%|███▍      | 77/225 [15:28<33:35, 13.62s/file][A
+Processing ml_features:  35%|███▍      | 78/225 [15:35<28:18, 11.56s/file][A
+Processing ml_features:  35%|███▌      | 79/225 [15:44<26:23, 10.84s/file][A
+Processing ml_features:  36%|███▌      | 80/225 [16:02<31:23, 12.99s/file][A
+Processing ml_features:  36%|███▌      | 81/225 [16:09<26:49, 11.18s/file][A
+Processing ml_features:  36%|███▋      | 82/225 [16:20<26:49, 11.26s/file][A
+Processing ml_features:  37%|███▋      | 83/225 [16:43<34:32, 14.60s/file][A
+Processing ml_features:  37%|███▋      | 84/225 [16:56<33:03, 14.07s/file][A
+Processing ml_features:  38%|███▊      | 85/225 [17:06<30:04, 12.89s/file][A
+Processing ml_features:  38%|███▊      | 86/225 [17:23<32:47, 14.15s/file][A
+Processing ml_features:  39%|███▊      | 87/225 [17:30<27:26, 11.93s/file][A
+Processing ml_features:  39%|███▉      | 88/225 [17:39<25:35, 11.21s/file][A
+Processing ml_features:  40%|███▉      | 89/225 [18:00<31:45, 14.01s/file][A
+Processing ml_features:  40%|████      | 90/225 [18:08<27:53, 12.40s/file][A
+Processing ml_features:  40%|████      | 91/225 [18:19<26:32, 11.89s/file][A
+Processing ml_features:  41%|████      | 92/225 [18:36<29:50, 13.46s/file][A
+Processing ml_features:  41%|████▏     | 93/225 [18:45<26:31, 12.06s/file][A
+Processing ml_features:  42%|████▏     | 94/225 [18:57<26:07, 11.97s/file][A
+Processing ml_features:  42%|████▏     | 95/225 [19:15<30:02, 13.87s/file][A
+Processing ml_features:  43%|████▎     | 96/225 [19:22<25:12, 11.73s/file][A
+Processing ml_features:  43%|████▎     | 97/225 [19:32<23:58, 11.24s/file][A
+Processing ml_features:  44%|████▎     | 98/225 [19:51<28:52, 13.64s/file][A
+Processing ml_features:  44%|████▍     | 99/225 [19:58<24:15, 11.55s/file][A
+Processing ml_features:  44%|████▍     | 100/225 [20:10<24:41, 11.85s/file][A
+Processing ml_features:  45%|████▍     | 101/225 [20:32<30:20, 14.68s/file][A
+Processing ml_features:  45%|████▌     | 102/225 [20:44<28:30, 13.91s/file][A
+Processing ml_features:  46%|████▌     | 103/225 [20:54<25:53, 12.73s/file][A
+Processing ml_features:  46%|████▌     | 104/225 [21:13<29:49, 14.79s/file][A
+Processing ml_features:  47%|████▋     | 105/225 [21:20<24:56, 12.47s/file][A
+Processing ml_features:  47%|████▋     | 106/225 [21:30<23:04, 11.63s/file][A
+Processing ml_features:  48%|████▊     | 107/225 [21:50<27:35, 14.03s/file][A
+Processing ml_features:  48%|████▊     | 108/225 [21:56<23:06, 11.85s/file][A
+Processing ml_features:  48%|████▊     | 109/225 [22:06<21:36, 11.18s/file][A
+Processing ml_features:  49%|████▉     | 110/225 [22:25<25:45, 13.44s/file][A
+Processing ml_features:  49%|████▉     | 111/225 [22:30<21:01, 11.06s/file][A
+Processing ml_features:  50%|████▉     | 112/225 [22:40<20:21, 10.81s/file][A
+Processing ml_features:  50%|█████     | 113/225 [23:00<24:50, 13.31s/file][A
+Processing ml_features:  51%|█████     | 114/225 [23:07<21:16, 11.50s/file][A
+Processing ml_features:  51%|█████     | 115/225 [23:15<18:58, 10.35s/file][A
+Processing ml_features:  52%|█████▏    | 116/225 [23:28<20:27, 11.26s/file][A
+Processing ml_features:  52%|█████▏    | 117/225 [23:34<17:34,  9.76s/file][A
+Processing ml_features:  52%|█████▏    | 118/225 [23:47<19:00, 10.66s/file][A
+Processing ml_features:  53%|█████▎    | 119/225 [24:06<23:26, 13.27s/file][A
+Processing ml_features:  53%|█████▎    | 120/225 [24:30<28:48, 16.46s/file][A
+Processing ml_features:  54%|█████▍    | 121/225 [24:40<24:56, 14.39s/file][A
+Processing ml_features:  54%|█████▍    | 122/225 [25:01<28:26, 16.56s/file][A
+Processing ml_features:  55%|█████▍    | 123/225 [25:10<24:20, 14.32s/file][A
+Processing ml_features:  55%|█████▌    | 124/225 [25:20<21:52, 13.00s/file][A
+Processing ml_features:  56%|█████▌    | 125/225 [25:38<23:52, 14.32s/file][A
+Processing ml_features:  56%|█████▌    | 126/225 [25:45<20:07, 12.20s/file][A
+Processing ml_features:  56%|█████▋    | 127/225 [25:55<18:41, 11.45s/file][A
+Processing ml_features:  57%|█████▋    | 128/225 [26:14<22:10, 13.71s/file][A
+Processing ml_features:  57%|█████▋    | 129/225 [26:20<18:25, 11.51s/file][A
+Processing ml_features:  58%|█████▊    | 130/225 [26:30<17:17, 10.92s/file][A
+Processing ml_features:  58%|█████▊    | 131/225 [26:48<20:43, 13.23s/file][A
+Processing ml_features:  59%|█████▊    | 132/225 [26:55<17:38, 11.38s/file][A
+Processing ml_features:  59%|█████▉    | 133/225 [27:05<16:30, 10.77s/file][A
+Processing ml_features:  60%|█████▉    | 134/225 [27:25<20:50, 13.74s/file][A
+Processing ml_features:  60%|██████    | 135/225 [27:32<17:22, 11.58s/file][A
+Processing ml_features:  60%|██████    | 136/225 [27:43<16:54, 11.40s/file][A
+Processing ml_features:  61%|██████    | 137/225 [28:03<20:31, 13.99s/file][A
+Processing ml_features:  61%|██████▏   | 138/225 [28:30<25:47, 17.79s/file][A
+Processing ml_features:  62%|██████▏   | 139/225 [28:38<21:37, 15.09s/file][A
+Processing ml_features:  62%|██████▏   | 140/225 [28:56<22:17, 15.74s/file][A
+Processing ml_features:  63%|██████▎   | 141/225 [29:03<18:27, 13.19s/file][A
+Processing ml_features:  63%|██████▎   | 142/225 [29:13<16:50, 12.17s/file][A
+Processing ml_features:  64%|██████▎   | 143/225 [29:30<18:53, 13.82s/file][A
+Processing ml_features:  64%|██████▍   | 144/225 [29:36<15:30, 11.49s/file][A
+Processing ml_features:  64%|██████▍   | 145/225 [29:48<15:16, 11.46s/file][A
+Processing ml_features:  65%|██████▍   | 146/225 [30:07<18:18, 13.90s/file][A
+Processing ml_features:  65%|██████▌   | 147/225 [30:28<20:46, 15.99s/file][A
+Processing ml_features:  66%|██████▌   | 148/225 [30:40<18:57, 14.77s/file][A
+Processing ml_features:  66%|██████▌   | 149/225 [30:58<19:53, 15.70s/file][A
+Processing ml_features:  67%|██████▋   | 150/225 [31:03<15:38, 12.51s/file][A
+Processing ml_features:  67%|██████▋   | 151/225 [31:11<13:50, 11.23s/file][A
+Processing ml_features:  68%|██████▊   | 152/225 [31:31<16:35, 13.63s/file][A
+Processing ml_features:  68%|██████▊   | 153/225 [31:38<14:01, 11.68s/file][A
+Processing ml_features:  68%|██████▊   | 154/225 [31:49<13:49, 11.68s/file][A
+Processing ml_features:  69%|██████▉   | 155/225 [32:13<17:50, 15.29s/file][A
+Processing ml_features:  69%|██████▉   | 156/225 [32:25<16:23, 14.26s/file][A
+Processing ml_features:  70%|██████▉   | 157/225 [32:35<14:41, 12.96s/file][A
+Processing ml_features:  70%|███████   | 158/225 [32:56<17:22, 15.55s/file][A
+Processing ml_features:  71%|███████   | 159/225 [33:02<13:52, 12.61s/file][A
+Processing ml_features:  71%|███████   | 160/225 [33:11<12:22, 11.43s/file][A
+Processing ml_features:  72%|███████▏  | 161/225 [33:32<15:24, 14.45s/file][A
+Processing ml_features:  72%|███████▏  | 162/225 [33:38<12:30, 11.92s/file][A
+Processing ml_features:  72%|███████▏  | 163/225 [33:53<13:16, 12.85s/file][A
+Processing ml_features:  73%|███████▎  | 164/225 [34:17<16:26, 16.17s/file][A
+Processing ml_features:  73%|███████▎  | 165/225 [34:24<13:16, 13.28s/file][A
+Processing ml_features:  74%|███████▍  | 166/225 [34:34<12:04, 12.28s/file][A
+Processing ml_features:  74%|███████▍  | 167/225 [34:54<14:13, 14.71s/file][A
+Processing ml_features:  75%|███████▍  | 168/225 [35:03<12:10, 12.82s/file][A
+Processing ml_features:  75%|███████▌  | 169/225 [35:12<11:08, 11.93s/file][A
+Processing ml_features:  76%|███████▌  | 170/225 [35:34<13:33, 14.78s/file][A
+Processing ml_features:  76%|███████▌  | 171/225 [35:41<11:10, 12.41s/file][A
+Processing ml_features:  76%|███████▋  | 172/225 [35:52<10:35, 12.00s/file][A
+Processing ml_features:  77%|███████▋  | 173/225 [36:10<12:08, 14.01s/file][A
+Processing ml_features:  77%|███████▋  | 174/225 [36:17<10:04, 11.85s/file][A
+Processing ml_features:  78%|███████▊  | 175/225 [36:27<09:20, 11.21s/file][A
+Processing ml_features:  78%|███████▊  | 176/225 [36:57<13:39, 16.72s/file][A
+Processing ml_features:  79%|███████▊  | 177/225 [37:03<11:01, 13.78s/file][A
+Processing ml_features:  79%|███████▉  | 178/225 [37:14<10:05, 12.88s/file][A
+Processing ml_features:  80%|███████▉  | 179/225 [37:35<11:45, 15.34s/file][A
+Processing ml_features:  80%|████████  | 180/225 [37:42<09:37, 12.83s/file][A
+Processing ml_features:  80%|████████  | 181/225 [37:51<08:36, 11.73s/file][A
+Processing ml_features:  81%|████████  | 182/225 [38:12<10:24, 14.51s/file][A
+Processing ml_features:  81%|████████▏ | 183/225 [38:19<08:32, 12.21s/file][A
+Processing ml_features:  82%|████████▏ | 184/225 [38:29<07:54, 11.57s/file][A
+Processing ml_features:  82%|████████▏ | 185/225 [38:51<09:40, 14.50s/file][A
+Processing ml_features:  83%|████████▎ | 186/225 [38:58<07:59, 12.29s/file][A
+Processing ml_features:  83%|████████▎ | 187/225 [39:08<07:23, 11.66s/file][A
+Processing ml_features:  84%|████████▎ | 188/225 [39:29<08:52, 14.38s/file][A
+Processing ml_features:  84%|████████▍ | 189/225 [39:36<07:16, 12.11s/file][A
+Processing ml_features:  84%|████████▍ | 190/225 [39:46<06:50, 11.73s/file][A
+Processing ml_features:  85%|████████▍ | 191/225 [40:06<08:01, 14.16s/file][A
+Processing ml_features:  85%|████████▌ | 192/225 [40:14<06:47, 12.34s/file][A
+Processing ml_features:  86%|████████▌ | 193/225 [40:24<06:08, 11.51s/file][A
+Processing ml_features:  86%|████████▌ | 194/225 [40:53<08:43, 16.88s/file][A
+Processing ml_features:  87%|████████▋ | 195/225 [41:01<07:03, 14.12s/file][A
+Processing ml_features:  87%|████████▋ | 196/225 [41:11<06:13, 12.88s/file][A
+Processing ml_features:  88%|████████▊ | 197/225 [41:30<06:53, 14.78s/file][A
+Processing ml_features:  88%|████████▊ | 198/225 [41:37<05:36, 12.46s/file][A
+Processing ml_features:  88%|████████▊ | 199/225 [41:47<05:03, 11.67s/file][A
+Processing ml_features:  89%|████████▉ | 200/225 [42:11<06:22, 15.29s/file][A
+Processing ml_features:  89%|████████▉ | 201/225 [42:19<05:13, 13.06s/file][A
+Processing ml_features:  90%|████████▉ | 202/225 [42:28<04:31, 11.80s/file][A
+Processing ml_features:  90%|█████████ | 203/225 [42:45<04:58, 13.56s/file][A
+Processing ml_features:  91%|█████████ | 204/225 [42:54<04:14, 12.10s/file][A
+Processing ml_features:  91%|█████████ | 205/225 [43:05<03:58, 11.94s/file][A
+Processing ml_features:  92%|█████████▏| 206/225 [43:23<04:16, 13.50s/file][A
+Processing ml_features:  92%|█████████▏| 207/225 [43:28<03:20, 11.15s/file][A
+Processing ml_features:  92%|█████████▏| 208/225 [43:38<03:03, 10.81s/file][A
+Processing ml_features:  93%|█████████▎| 209/225 [43:53<03:10, 11.94s/file][A
+Processing ml_features:  93%|█████████▎| 210/225 [43:59<02:34, 10.31s/file][A
+Processing ml_features:  94%|█████████▍| 211/225 [44:09<02:22, 10.18s/file][A
+Processing ml_features:  94%|█████████▍| 212/225 [44:25<02:34, 11.92s/file][A
+Processing ml_features:  95%|█████████▍| 213/225 [44:32<02:04, 10.38s/file][A
+Processing ml_features:  95%|█████████▌| 214/225 [44:41<01:49,  9.95s/file][A
+Processing ml_features:  96%|█████████▌| 215/225 [44:59<02:02, 12.30s/file][A
+Processing ml_features:  96%|█████████▌| 216/225 [45:05<01:33, 10.36s/file][A
+Processing ml_features:  96%|█████████▋| 217/225 [45:13<01:19,  9.88s/file][A
+Processing ml_features:  97%|█████████▋| 218/225 [45:32<01:27, 12.44s/file][A
+Processing ml_features:  97%|█████████▋| 219/225 [45:37<01:01, 10.22s/file][A
+Processing ml_features:  98%|█████████▊| 220/225 [45:50<00:55, 11.15s/file][A
+Processing ml_features:  98%|█████████▊| 221/225 [46:12<00:57, 14.33s/file][A
+Processing ml_features:  99%|█████████▊| 222/225 [46:19<00:36, 12.04s/file][A
+Processing ml_features:  99%|█████████▉| 223/225 [46:27<00:22, 11.11s/file][A
+Processing ml_features: 100%|█████████▉| 224/225 [46:46<00:13, 13.47s/file][A
+Processing ml_features: 100%|██████████| 225/225 [46:54<00:00, 11.63s/file][AProcessing ml_features: 100%|██████████| 225/225 [46:54<00:00, 12.51s/file]
