@@ -1,0 +1,74 @@
+================================================================================
+RANDOM FOREST EXPERIMENT SUMMARY
+================================================================================
+
+Dataset Information:
+  Total trials: 41154
+  Number of classes: 11
+  Number of features: 88
+  Train/Val/Test split: 0.7/0.15/0.15
+
+Experimental Setup:
+  Number of configurations: 4
+  Trials per configuration: 5
+  Random seeds: [0, 1, 2, 3, 4]
+
+Performance Analysis:
+  Best test accuracy: 0.2672 (26.72%)
+  Chance level (1/11): 0.0909 (9.09%)
+  Above chance: Yes
+
+  ⚠️  WARNING: Low accuracy detected!
+     Possible causes:
+     1. Insufficient data per class (~75 trials per class after split)
+     2. High inter-class similarity in EEG patterns
+     3. Need more sophisticated features or preprocessing
+     4. Random Forest may not be optimal for this task
+     Recommendations:
+     - Try SVM with RBF kernel (handles high-dimensional better)
+     - Try CNN (learns features automatically)
+     - Check CSP+LDA results for comparison
+
+--------------------------------------------------------------------------------
+
+Results by Configuration:
+--------------------------------------------------------------------------------
+
+Configuration: n_estimators=100, max_features=sqrt
+  Test Accuracy: 0.2639 [0.2616, 0.2668]
+  Test F1 (macro): 0.2630 [0.2606, 0.2657]
+  Feature stability: 0.9761 ± 0.0033
+
+Configuration: n_estimators=100, max_features=26
+  Test Accuracy: 0.2662 [0.2627, 0.2686]
+  Test F1 (macro): 0.2654 [0.2618, 0.2680]
+  Feature stability: 0.9847 ± 0.0024
+
+Configuration: n_estimators=200, max_features=sqrt
+  Test Accuracy: 0.2648 [0.2629, 0.2664]
+  Test F1 (macro): 0.2639 [0.2619, 0.2656]
+  Feature stability: 0.9829 ± 0.0028
+
+Configuration: n_estimators=200, max_features=26
+  Test Accuracy: 0.2672 [0.2648, 0.2708]
+  Test F1 (macro): 0.2663 [0.2637, 0.2700]
+  Feature stability: 0.9894 ± 0.0017
+
+--------------------------------------------------------------------------------
+
+Best Configuration:
+  n_estimators: 200
+  max_features: 26
+  Test Accuracy: 0.2672
+
+Top 10 Most Important Features:
+  1. std_ch8: 0.0152
+  2. beta_power_ch13: 0.0152
+  3. std_ch4: 0.0151
+  4. std_ch20: 0.0144
+  5. beta_power_ch5: 0.0143
+  6. std_ch14: 0.0143
+  7. std_ch16: 0.0139
+  8. std_ch13: 0.0139
+  9. std_ch1: 0.0139
+  10. std_ch3: 0.0135

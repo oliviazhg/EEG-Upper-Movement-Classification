@@ -1,0 +1,337 @@
+================================================================================
+RANDOM FOREST EXPERIMENT - EEG UPPER-LIMB MOVEMENT CLASSIFICATION
+================================================================================
+
+================================================================================
+STEP 1: DATA LOADING AND PREPROCESSING
+================================================================================
+Loading data from /home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/PreprocessedData2/ml_features_data.npz...
+Loaded from .npz file
+  Metadata found:
+    Files: 224
+    Sampling rate: 2500 Hz
+    Filter: 8-30 Hz
+Initial data shape: (83609, 88), Labels: (83609,)
+Unique classes before filtering: [ 0  1  2  3  4  5  6  7  8  9 10 11]
+
+Removing rest class (class 0)...
+After removing rest:
+  Data shape: (41154, 88)
+  Labels shape: (41154,)
+  Unique classes: [ 0  1  2  3  4  5  6  7  8  9 10]
+  Number of classes: 11
+
+Class distribution:
+  Class 0 (forward): 3750 trials
+  Class 1 (backward): 3750 trials
+  Class 2 (left): 3750 trials
+  Class 3 (right): 3750 trials
+  Class 4 (up): 3750 trials
+  Class 5 (down): 3750 trials
+  Class 6 (power_grasp): 3750 trials
+  Class 7 (precision_grasp): 3750 trials
+  Class 8 (lateral_grasp): 3750 trials
+  Class 9 (pronation): 3703 trials
+  Class 10 (supination): 3701 trials
+
+================================================================================
+STEP 2: FEATURE EXTRACTION
+================================================================================
+
+Data already contains extracted features!
+  Feature shape: (41154, 88)
+  ✓ Detected 88 features (4 per channel × 22 motor channels)
+  This uses motor cortex channels only.
+  WARNING: This differs from the 240 features (60 channels) expected.
+           Adjusting configuration...
+  Updated RF configs for 88 features:
+    sqrt(88) ≈ 9
+    0.3×88 ≈ 26
+
+================================================================================
+STEP 3: TRAINING AND EVALUATION
+================================================================================
+
+================================================================================
+Configuration 1/4: {'n_estimators': 100, 'max_features': 'sqrt'}
+================================================================================
+Data split (seed=0):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=100, max_feat=sqrt, seed=0
+  Train acc: 1.000
+  Val acc:   0.266
+  Test acc:  0.269
+  OOB score: 0.262
+  Training time: 2.09s
+Data split (seed=1):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=100, max_feat=sqrt, seed=1
+  Train acc: 1.000
+  Val acc:   0.267
+  Test acc:  0.260
+  OOB score: 0.259
+  Training time: 2.11s
+Data split (seed=2):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=100, max_feat=sqrt, seed=2
+  Train acc: 1.000
+  Val acc:   0.265
+  Test acc:  0.265
+  OOB score: 0.257
+  Training time: 2.11s
+Data split (seed=3):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=100, max_feat=sqrt, seed=3
+  Train acc: 1.000
+  Val acc:   0.260
+  Test acc:  0.263
+  OOB score: 0.261
+  Training time: 2.09s
+Data split (seed=4):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=100, max_feat=sqrt, seed=4
+  Train acc: 1.000
+  Val acc:   0.268
+  Test acc:  0.263
+  OOB score: 0.263
+  Training time: 2.03s
+
+================================================================================
+Configuration 2/4: {'n_estimators': 100, 'max_features': 26}
+================================================================================
+Data split (seed=0):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=100, max_feat=26, seed=0
+  Train acc: 1.000
+  Val acc:   0.268
+  Test acc:  0.265
+  OOB score: 0.261
+  Training time: 5.02s
+Data split (seed=1):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=100, max_feat=26, seed=1
+  Train acc: 1.000
+  Val acc:   0.263
+  Test acc:  0.260
+  OOB score: 0.261
+  Training time: 4.96s
+Data split (seed=2):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=100, max_feat=26, seed=2
+  Train acc: 1.000
+  Val acc:   0.262
+  Test acc:  0.268
+  OOB score: 0.257
+  Training time: 5.04s
+Data split (seed=3):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=100, max_feat=26, seed=3
+  Train acc: 1.000
+  Val acc:   0.266
+  Test acc:  0.270
+  OOB score: 0.259
+  Training time: 5.09s
+Data split (seed=4):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=100, max_feat=26, seed=4
+  Train acc: 1.000
+  Val acc:   0.265
+  Test acc:  0.268
+  OOB score: 0.261
+  Training time: 5.15s
+
+================================================================================
+Configuration 3/4: {'n_estimators': 200, 'max_features': 'sqrt'}
+================================================================================
+Data split (seed=0):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=200, max_feat=sqrt, seed=0
+  Train acc: 1.000
+  Val acc:   0.271
+  Test acc:  0.262
+  OOB score: 0.261
+  Training time: 3.83s
+Data split (seed=1):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=200, max_feat=sqrt, seed=1
+  Train acc: 1.000
+  Val acc:   0.268
+  Test acc:  0.264
+  OOB score: 0.264
+  Training time: 3.72s
+Data split (seed=2):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=200, max_feat=sqrt, seed=2
+  Train acc: 1.000
+  Val acc:   0.264
+  Test acc:  0.266
+  OOB score: 0.259
+  Training time: 3.72s
+Data split (seed=3):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=200, max_feat=sqrt, seed=3
+  Train acc: 1.000
+  Val acc:   0.264
+  Test acc:  0.267
+  OOB score: 0.264
+  Training time: 3.76s
+Data split (seed=4):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=200, max_feat=sqrt, seed=4
+  Train acc: 1.000
+  Val acc:   0.267
+  Test acc:  0.266
+  OOB score: 0.264
+  Training time: 3.75s
+
+================================================================================
+Configuration 4/4: {'n_estimators': 200, 'max_features': 26}
+================================================================================
+Data split (seed=0):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=200, max_feat=26, seed=0
+  Train acc: 1.000
+  Val acc:   0.272
+  Test acc:  0.266
+  OOB score: 0.262
+  Training time: 8.97s
+Data split (seed=1):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=200, max_feat=26, seed=1
+  Train acc: 1.000
+  Val acc:   0.257
+  Test acc:  0.265
+  OOB score: 0.265
+  Training time: 9.03s
+Data split (seed=2):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=200, max_feat=26, seed=2
+  Train acc: 1.000
+  Val acc:   0.269
+  Test acc:  0.263
+  OOB score: 0.257
+  Training time: 9.06s
+Data split (seed=3):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=200, max_feat=26, seed=3
+  Train acc: 1.000
+  Val acc:   0.265
+  Test acc:  0.273
+  OOB score: 0.263
+  Training time: 9.05s
+Data split (seed=4):
+  Train: 28807 samples
+  Val:   6173 samples
+  Test:  6174 samples
+
+Training RF: n_trees=200, max_feat=26, seed=4
+  Train acc: 1.000
+  Val acc:   0.263
+  Test acc:  0.269
+  OOB score: 0.264
+  Training time: 9.23s
+
+================================================================================
+STEP 4: STATISTICAL ANALYSIS
+================================================================================
+
+Configuration: n_trees=100, max_features=sqrt
+  Test Accuracy: 0.264 [0.262, 0.267]
+  Test F1 (macro): 0.263 [0.261, 0.266]
+  Feature importance stability: 0.976 ± 0.003
+
+Configuration: n_trees=100, max_features=26
+  Test Accuracy: 0.266 [0.263, 0.269]
+  Test F1 (macro): 0.265 [0.262, 0.268]
+  Feature importance stability: 0.985 ± 0.002
+
+Configuration: n_trees=200, max_features=sqrt
+  Test Accuracy: 0.265 [0.263, 0.266]
+  Test F1 (macro): 0.264 [0.262, 0.266]
+  Feature importance stability: 0.983 ± 0.003
+
+Configuration: n_trees=200, max_features=26
+  Test Accuracy: 0.267 [0.265, 0.271]
+  Test F1 (macro): 0.266 [0.264, 0.270]
+  Feature importance stability: 0.989 ± 0.002
+
+================================================================================
+STEP 5: GENERATING VISUALIZATIONS
+================================================================================
+
+Best configuration: n_trees=200, max_features=26
+  Test Accuracy: 0.267
+Saved parameter comparison plot to results/random_forest/figures/parameter_comparison.png
+Saved feature importance plot to results/random_forest/figures/feature_importance.png
+Saved confusion matrix to results/random_forest/figures/confusion_matrix.png
+Saved per-class F1 plot to results/random_forest/figures/per_class_f1.png
+
+================================================================================
+STEP 6: GENERATING SUMMARY REPORT
+================================================================================
+Saved summary report to results/random_forest/experiment_report.txt
+
+================================================================================
+EXPERIMENT COMPLETE!
+================================================================================
+
+Results saved to: results/random_forest
+Figures saved to: results/random_forest/figures
+Data saved to: results/random_forest/data

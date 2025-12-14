@@ -38,9 +38,9 @@ class Config:
     """Experimental configuration parameters"""
     # Data parameters
     FS = 2500  # Sampling frequency (Hz)
-    N_CHANNELS = 60  # Number of EEG channels
-    TRIAL_DURATION = 2.0  # seconds
-    N_SAMPLES = int(FS * TRIAL_DURATION)  # 5000 samples
+    N_CHANNELS = 22  # Number of EEG channels
+    TRIAL_DURATION = 3.0  # seconds
+    N_SAMPLES = int(FS * TRIAL_DURATION)  # 7500 samples
     
     # Frequency bands
     MU_BAND = (8, 12)  # Hz
@@ -199,11 +199,16 @@ def load_and_preprocess_data(data_path: str) -> Tuple[np.ndarray, np.ndarray]:
     IMPORTANT: This function removes the rest class (class 0) from the data,
     as we are only classifying the 11 active movements.
     
+    Supports three input formats:
+    1. Preprocessed .npz from preprocessing script (raw trials or features)
+    2. Separate .npy files (eeg_data.npy, labels.npy)
+    3. Directory (looks for .npy files inside)
+    
     Args:
         data_path: Path to the dataset
     
     Returns:
-        eeg_data: EEG trials (n_trials, n_channels, n_samples)
+        eeg_data: EEG trials (n_trials, n_channels, n_samples) OR features (n_trials, n_features)
         labels: Movement labels (n_trials,) - classes 0-10 for the 11 movements
     """
     print(f"Loading data from {data_path}...")
@@ -211,25 +216,57 @@ def load_and_preprocess_data(data_path: str) -> Tuple[np.ndarray, np.ndarray]:
     # Load data based on format
     data_path = Path(data_path)
     
-    if (data_path / 'eeg_data.npy').exists():
-        # Load from .npy files
-        eeg_data = np.load(data_path / 'eeg_data.npy')
-        labels = np.load(data_path / 'labels.npy')
-        print(f"Loaded from .npy files")
-    
-    elif data_path.suffix == '.npz':
+    if data_path.suffix == '.npz':
         # Load from .npz file (from preprocessing script)
-        data = np.load(data_path)
+        data = np.load(data_path, allow_pickle=True)
         eeg_data = data['X']
         labels = data['y']
         print(f"Loaded from .npz file")
+        
+        # Check if metadata exists
+        if 'metadata' in data:
+            metadata = data['metadata'].item() if data['metadata'].shape == () else data['metadata']
+            if isinstance(metadata, dict):
+                print(f"  Metadata found:")
+                print(f"    Files: {metadata.get('n_files', 'N/A')}")
+                print(f"    Sampling rate: {metadata.get('fs', 'N/A')} Hz")
+                if 'filter' in metadata:
+                    print(f"    Filter: {metadata['filter'][0]}-{metadata['filter'][1]} Hz")
+    
+    elif (data_path / 'eeg_data.npy').exists():
+        # Load from .npy files
+        eeg_data = np.load(data_path / 'eeg_data.npy')
+        labels = np.load(data_path / 'labels.npy')
+        print(f"Loaded from .npy files in directory")
+    
+    elif data_path.is_dir():
+        # Check if .npz files exist in directory
+        npz_files = list(data_path.glob('*.npz'))
+        if npz_files:
+            # Look for ml_features file first (preferred for RF)
+            ml_file = data_path / 'ml_features_data.npz'
+            if ml_file.exists():
+                print(f"Found ml_features_data.npz - this already has features extracted!")
+                print(f"WARNING: This script will re-extract features from raw data.")
+                print(f"         If you want to use pre-extracted features, load them directly.")
+                data = np.load(ml_file, allow_pickle=True)
+                eeg_data = data['X']
+                labels = data['y']
+            else:
+                # Use first .npz file found
+                data = np.load(npz_files[0], allow_pickle=True)
+                eeg_data = data['X']
+                labels = data['y']
+                print(f"Loaded from {npz_files[0].name}")
+        else:
+            raise FileNotFoundError(f"No .npz or .npy files found in {data_path}")
     
     else:
         # For demonstration, create synthetic data
         print("WARNING: Using synthetic data for demonstration!")
-        n_trials = 1100  # ~100 trials per class
+        n_trials = 1100  # ~100 trials per class (including rest)
         eeg_data = np.random.randn(n_trials, Config.N_CHANNELS, Config.N_SAMPLES)
-        labels = np.repeat(np.arange(Config.N_CLASSES), n_trials // Config.N_CLASSES)
+        labels = np.repeat(np.arange(12), n_trials // 12)  # 12 classes (0=rest, 1-11=movements)
     
     print(f"Initial data shape: {eeg_data.shape}, Labels: {labels.shape}")
     print(f"Unique classes before filtering: {np.unique(labels)}")
@@ -480,11 +517,45 @@ def plot_parameter_comparison(config_summaries: List[Dict], save_path: Path):
     x = np.arange(2)  # Two groups (100 trees, 200 trees)
     width = 0.35
     
-    # Extract accuracies and CIs
-    acc_100_sqrt = [s for s in n_trees_100 if s['max_features'] == 'sqrt'][0]
-    acc_100_const = [s for s in n_trees_100 if s['max_features'] == 72][0]
-    acc_200_sqrt = [s for s in n_trees_200 if s['max_features'] == 'sqrt'][0]
-    acc_200_const = [s for s in n_trees_200 if s['max_features'] == 72][0]
+    # Find the two different max_features values
+    # One should be 'sqrt', the other should be a number
+    sqrt_configs_100 = [s for s in n_trees_100 if s['max_features'] == 'sqrt']
+    const_configs_100 = [s for s in n_trees_100 if s['max_features'] != 'sqrt']
+    sqrt_configs_200 = [s for s in n_trees_200 if s['max_features'] == 'sqrt']
+    const_configs_200 = [s for s in n_trees_200 if s['max_features'] != 'sqrt']
+    
+    # Validate we have both types
+    if not (sqrt_configs_100 and const_configs_100 and sqrt_configs_200 and const_configs_200):
+        print("Warning: Missing some configurations for parameter comparison plot")
+        # Create a simpler plot with available data
+        all_configs = config_summaries
+        labels = [f"n{s['n_estimators']}_mf{s['max_features']}" for s in all_configs]
+        means = [s['test_acc_mean'] for s in all_configs]
+        ci_lows = [s['test_acc_mean'] - s['test_acc_ci_low'] for s in all_configs]
+        ci_highs = [s['test_acc_ci_high'] - s['test_acc_mean'] for s in all_configs]
+        
+        x = np.arange(len(labels))
+        ax.bar(x, means, yerr=[ci_lows, ci_highs], capsize=5, alpha=0.7)
+        ax.set_xticks(x)
+        ax.set_xticklabels(labels, rotation=15, ha='right')
+        ax.set_ylabel('Test Accuracy', fontsize=12)
+        ax.set_xlabel('Configuration', fontsize=12)
+        ax.set_title('Random Forest Configuration Comparison', fontsize=14, fontweight='bold')
+        ax.grid(axis='y', alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.close()
+        print(f"Saved parameter comparison plot to {save_path}")
+        return
+    
+    # Get configs
+    acc_100_sqrt = sqrt_configs_100[0]
+    acc_100_const = const_configs_100[0]
+    acc_200_sqrt = sqrt_configs_200[0]
+    acc_200_const = const_configs_200[0]
+    
+    # Get the constant value for labeling
+    const_value = acc_100_const['max_features']
     
     means_sqrt = [acc_100_sqrt['test_acc_mean'], acc_200_sqrt['test_acc_mean']]
     means_const = [acc_100_const['test_acc_mean'], acc_200_const['test_acc_mean']]
@@ -505,9 +576,9 @@ def plot_parameter_comparison(config_summaries: List[Dict], save_path: Path):
            label='sqrt features', capsize=5)
     ax.bar(x + width/2, means_const, width,
            yerr=[err_const_low, err_const_high],
-           label='0.3×features (72)', capsize=5)
+           label=f'{const_value} features', capsize=5)
     
-    ax.set_ylabel('Test Accuracy (%)', fontsize=12)
+    ax.set_ylabel('Test Accuracy', fontsize=12)
     ax.set_xlabel('Number of Trees', fontsize=12)
     ax.set_title('Random Forest Parameter Comparison', fontsize=14, fontweight='bold')
     ax.set_xticks(x)
@@ -635,8 +706,94 @@ def run_experiment(data_path: str = './data'):
     print("STEP 2: FEATURE EXTRACTION")
     print("="*80)
     
-    features, feature_names = extract_all_features(eeg_data)
-    Config.FEATURE_NAMES = feature_names
+    # Check if data already contains features (from preprocessing script)
+    if eeg_data.ndim == 2:
+        # Data is already features (n_trials, n_features)
+        print("\nData already contains extracted features!")
+        print(f"  Feature shape: {eeg_data.shape}")
+        
+        # Check if this matches expected feature count (240)
+        if eeg_data.shape[1] == 4 * Config.N_CHANNELS:
+            print(f"  ✓ Matches expected 240 features (4 per channel × 60 channels)")
+            print(f"  Using pre-extracted features from preprocessing script")
+            features = eeg_data
+            
+            # Generate feature names to match
+            feature_names = []
+            feature_names.extend([f'mu_power_ch{i+1}' for i in range(Config.N_CHANNELS)])
+            feature_names.extend([f'beta_power_ch{i+1}' for i in range(Config.N_CHANNELS)])
+            feature_names.extend([f'mean_ch{i+1}' for i in range(Config.N_CHANNELS)])
+            feature_names.extend([f'std_ch{i+1}' for i in range(Config.N_CHANNELS)])
+            
+            Config.FEATURE_NAMES = feature_names
+            
+            print(f"\n  WARNING: Preprocessing script extracted features differently than this script.")
+            print(f"           Results may differ from CSP+LDA due to different feature extraction.")
+            print(f"           For best results, use raw EEG data and extract features here.")
+        
+        elif eeg_data.shape[1] == 88:
+            # Old preprocessing (22 motor channels × 4 features)
+            print(f"  ✓ Detected 88 features (4 per channel × 22 motor channels)")
+            print(f"  This uses motor cortex channels only.")
+            print(f"  WARNING: This differs from the 240 features (60 channels) expected.")
+            print(f"           Adjusting configuration...")
+            features = eeg_data
+            
+            # Adjust config
+            Config.N_CHANNELS = 22
+            feature_names = []
+            feature_names.extend([f'mu_power_ch{i+1}' for i in range(22)])
+            feature_names.extend([f'beta_power_ch{i+1}' for i in range(22)])
+            feature_names.extend([f'mean_ch{i+1}' for i in range(22)])
+            feature_names.extend([f'std_ch{i+1}' for i in range(22)])
+            Config.FEATURE_NAMES = feature_names
+            
+            # Update RF configs for different feature count
+            Config.RF_CONFIGS = [
+                {'n_estimators': 100, 'max_features': 'sqrt'},  # sqrt(88) ≈ 9
+                {'n_estimators': 100, 'max_features': 26},       # 0.3 * 88 ≈ 26
+                {'n_estimators': 200, 'max_features': 'sqrt'},
+                {'n_estimators': 200, 'max_features': 26},
+            ]
+            print(f"  Updated RF configs for 88 features:")
+            print(f"    sqrt(88) ≈ 9")
+            print(f"    0.3×88 ≈ 26")
+        
+        else:
+            print(f"  WARNING: Unexpected feature count: {eeg_data.shape[1]}")
+            print(f"           Expected 240 (60 channels) or 88 (22 channels)")
+            print(f"           Using provided features as-is...")
+            features = eeg_data
+            feature_names = [f'feature_{i}' for i in range(eeg_data.shape[1])]
+            Config.FEATURE_NAMES = feature_names
+    
+    elif eeg_data.ndim == 3:
+        # Data is raw EEG trials (n_trials, n_channels, n_samples)
+        print("\nData contains raw EEG trials, extracting features...")
+        
+        # Verify channel count matches config
+        if eeg_data.shape[1] != Config.N_CHANNELS:
+            print(f"  WARNING: Data has {eeg_data.shape[1]} channels, expected {Config.N_CHANNELS}")
+            print(f"           Adjusting configuration...")
+            Config.N_CHANNELS = eeg_data.shape[1]
+            
+            # Update RF configs
+            if eeg_data.shape[1] == 22:
+                # Motor cortex channels only
+                Config.RF_CONFIGS = [
+                    {'n_estimators': 100, 'max_features': 'sqrt'},
+                    {'n_estimators': 100, 'max_features': 26},
+                    {'n_estimators': 200, 'max_features': 'sqrt'},
+                    {'n_estimators': 200, 'max_features': 26},
+                ]
+                print(f"  Updated RF configs for 22 channels (88 features)")
+        
+        features, feature_names = extract_all_features(eeg_data)
+        Config.FEATURE_NAMES = feature_names
+    
+    else:
+        raise ValueError(f"Unexpected data dimensions: {eeg_data.ndim}. "
+                        f"Expected 2 (features) or 3 (raw trials)")
     
     # Save features for future use
     np.save(Config.DATA_DIR / 'features.npy', features)
@@ -827,7 +984,7 @@ def run_experiment(data_path: str = './data'):
         f.write("Dataset Information:\n")
         f.write(f"  Total trials: {len(labels)}\n")
         f.write(f"  Number of classes: {Config.N_CLASSES}\n")
-        f.write(f"  Number of features: 240\n")
+        f.write(f"  Number of features: {len(Config.FEATURE_NAMES)}\n")
         f.write(f"  Train/Val/Test split: {Config.TRAIN_RATIO}/{Config.VAL_RATIO}/{Config.TEST_RATIO}\n\n")
         
         f.write("Experimental Setup:\n")
@@ -835,7 +992,33 @@ def run_experiment(data_path: str = './data'):
         f.write(f"  Trials per configuration: {Config.N_TRIALS}\n")
         f.write(f"  Random seeds: {Config.RANDOM_SEEDS}\n\n")
         
-        f.write("Results by Configuration:\n")
+        # Add accuracy analysis
+        best_acc = best_config['test_acc_mean']
+        chance_level = 1.0 / Config.N_CLASSES
+        
+        f.write("Performance Analysis:\n")
+        f.write(f"  Best test accuracy: {best_acc:.4f} ({best_acc*100:.2f}%)\n")
+        f.write(f"  Chance level (1/{Config.N_CLASSES}): {chance_level:.4f} ({chance_level*100:.2f}%)\n")
+        f.write(f"  Above chance: {'Yes' if best_acc > chance_level else 'No'}\n")
+        
+        if best_acc < 0.3:
+            f.write("\n  ⚠️  WARNING: Low accuracy detected!\n")
+            f.write("     Possible causes:\n")
+            f.write("     1. Insufficient data per class (~75 trials per class after split)\n")
+            f.write("     2. High inter-class similarity in EEG patterns\n")
+            f.write("     3. Need more sophisticated features or preprocessing\n")
+            f.write("     4. Random Forest may not be optimal for this task\n")
+            f.write("     Recommendations:\n")
+            f.write("     - Try SVM with RBF kernel (handles high-dimensional better)\n")
+            f.write("     - Try CNN (learns features automatically)\n")
+            f.write("     - Check CSP+LDA results for comparison\n")
+        elif best_acc < 0.5:
+            f.write("\n  ℹ️  Moderate accuracy - typical for 11-class EEG classification\n")
+        else:
+            f.write("\n  ✓ Good accuracy for 11-class motor imagery classification\n")
+        
+        f.write("\n" + "-"*80 + "\n")
+        f.write("\nResults by Configuration:\n")
         f.write("-"*80 + "\n")
         
         for summary in config_summaries:
@@ -883,7 +1066,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--data_path',
         type=str,
-        default='./data',
+        default='/home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/PreprocessedData2',
         help='Path to dataset directory'
     )
     

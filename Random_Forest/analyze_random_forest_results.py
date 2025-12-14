@@ -148,10 +148,20 @@ def analyze_feature_importance(config_summaries: List[Dict],
     best_idx = np.argmax([s['test_acc_mean'] for s in config_summaries])
     best_config = config_summaries[best_idx]
     
-    # Get top features
-    top_indices = best_config['top_20_features_indices']
+    # Get top features (handle case where there might be fewer than 20 features)
+    n_features = len(feature_names)
+    n_top = min(20, n_features)
+    
+    if 'top_20_features_indices' in best_config:
+        top_indices = best_config['top_20_features_indices'][:n_top]
+        top_importance = best_config['top_20_features_importance'][:n_top]
+    else:
+        # Fallback: use mean importances directly
+        importances = best_config['feature_importances_mean']
+        top_indices = np.argsort(importances)[-n_top:][::-1]
+        top_importance = importances[top_indices]
+    
     top_names = [feature_names[i] for i in top_indices]
-    top_importance = best_config['top_20_features_importance']
     
     # Categorize features by type
     feature_categories = {
@@ -162,14 +172,16 @@ def analyze_feature_importance(config_summaries: List[Dict],
     }
     
     for idx, name in zip(top_indices, top_names):
-        if 'mu_power' in name:
-            feature_categories['mu_power'].append((name, best_config['feature_importances_mean'][idx]))
-        elif 'beta_power' in name:
-            feature_categories['beta_power'].append((name, best_config['feature_importances_mean'][idx]))
+        importance_val = best_config['feature_importances_mean'][idx]
+        
+        if 'mu_power' in name or 'mu' in name.lower():
+            feature_categories['mu_power'].append((name, importance_val))
+        elif 'beta_power' in name or 'beta' in name.lower():
+            feature_categories['beta_power'].append((name, importance_val))
         elif 'mean' in name:
-            feature_categories['mean_amplitude'].append((name, best_config['feature_importances_mean'][idx]))
+            feature_categories['mean_amplitude'].append((name, importance_val))
         elif 'std' in name:
-            feature_categories['std_deviation'].append((name, best_config['feature_importances_mean'][idx]))
+            feature_categories['std_deviation'].append((name, importance_val))
     
     # Calculate category contributions
     category_totals = {
@@ -182,6 +194,7 @@ def analyze_feature_importance(config_summaries: List[Dict],
         'feature_categories': feature_categories,
         'category_totals': category_totals,
         'best_config': best_config,
+        'n_top_features': n_top,
     }
 
 
@@ -340,9 +353,17 @@ def plot_statistical_significance_matrix(stat_df: pd.DataFrame, save_path: Path)
     """
     Create a matrix showing statistical significance between configurations.
     """
+    if len(stat_df) == 0:
+        print("  No pairwise comparisons to plot (only 1 configuration?)")
+        return
+    
     # Get unique configurations
     all_configs = sorted(set(stat_df['config_1'].tolist() + stat_df['config_2'].tolist()))
     n_configs = len(all_configs)
+    
+    if n_configs < 2:
+        print("  Need at least 2 configurations for comparison matrix")
+        return
     
     # Create matrix
     p_matrix = np.ones((n_configs, n_configs))
@@ -456,6 +477,7 @@ def analyze_results(results_dir: str = './results/random_forest'):
                   f"d = {row['cohen_d']:.2f} ({row['effect_size_interpretation']})")
     else:
         print("  No statistically significant differences found.")
+        print("  This suggests all configurations perform similarly on this task.")
     
     # ========================================================================
     # FEATURE IMPORTANCE ANALYSIS
@@ -466,13 +488,20 @@ def analyze_results(results_dir: str = './results/random_forest'):
     
     importance_analysis = analyze_feature_importance(config_summaries, feature_names)
     
-    print("\nTop 10 Most Important Features:")
+    n_top = importance_analysis['n_top_features']
+    print(f"\nTop {min(10, n_top)} Most Important Features:")
     for i, (name, imp) in enumerate(importance_analysis['top_features'][:10]):
         print(f"  {i+1}. {name}: {imp:.4f}")
     
     print("\nFeature Category Contributions:")
-    for cat, total in importance_analysis['category_totals'].items():
-        print(f"  {cat}: {total:.4f}")
+    total_importance = sum(importance_analysis['category_totals'].values())
+    if total_importance > 0:
+        for cat, total in sorted(importance_analysis['category_totals'].items(),
+                                key=lambda x: x[1], reverse=True):
+            pct = 100 * total / total_importance
+            print(f"  {cat:20s}: {total:.4f} ({pct:.2f}%)")
+    else:
+        print("  Unable to categorize features")
     
     # ========================================================================
     # ADDITIONAL VISUALIZATIONS
@@ -481,13 +510,32 @@ def analyze_results(results_dir: str = './results/random_forest'):
     print("GENERATING ADDITIONAL VISUALIZATIONS")
     print("="*80)
     
-    plot_accuracy_distribution(all_results, posthoc_dir / 'accuracy_distribution.png')
-    plot_feature_category_contribution(importance_analysis, 
-                                      posthoc_dir / 'feature_category_contribution.png')
-    plot_training_time_comparison(all_results, posthoc_dir / 'training_time_comparison.png')
-    plot_learning_curves(all_results, posthoc_dir / 'learning_curves.png')
-    plot_statistical_significance_matrix(stat_df, 
-                                        posthoc_dir / 'statistical_significance_matrix.png')
+    try:
+        plot_accuracy_distribution(all_results, posthoc_dir / 'accuracy_distribution.png')
+    except Exception as e:
+        print(f"  Warning: Could not create accuracy distribution plot: {e}")
+    
+    try:
+        plot_feature_category_contribution(importance_analysis, 
+                                          posthoc_dir / 'feature_category_contribution.png')
+    except Exception as e:
+        print(f"  Warning: Could not create feature category plot: {e}")
+    
+    try:
+        plot_training_time_comparison(all_results, posthoc_dir / 'training_time_comparison.png')
+    except Exception as e:
+        print(f"  Warning: Could not create training time plot: {e}")
+    
+    try:
+        plot_learning_curves(all_results, posthoc_dir / 'learning_curves.png')
+    except Exception as e:
+        print(f"  Warning: Could not create learning curves plot: {e}")
+    
+    try:
+        plot_statistical_significance_matrix(stat_df, 
+                                            posthoc_dir / 'statistical_significance_matrix.png')
+    except Exception as e:
+        print(f"  Warning: Could not create significance matrix plot: {e}")
     
     # ========================================================================
     # GENERATE ENHANCED REPORT
@@ -519,15 +567,20 @@ def analyze_results(results_dir: str = './results/random_forest'):
         # Feature importance
         f.write("\n2. FEATURE IMPORTANCE ANALYSIS\n")
         f.write("-"*80 + "\n\n")
-        f.write("Top 20 Most Important Features:\n\n")
+        n_top = importance_analysis['n_top_features']
+        f.write(f"Top {n_top} Most Important Features:\n\n")
         for i, (name, imp) in enumerate(importance_analysis['top_features']):
-            f.write(f"{i+1:2d}. {name:30s}: {imp:.6f}\n")
+            f.write(f"{i+1:2d}. {name:40s}: {imp:.6f}\n")
         
         f.write("\nFeature Category Contributions:\n\n")
-        for cat, total in sorted(importance_analysis['category_totals'].items(), 
-                                key=lambda x: x[1], reverse=True):
-            pct = 100 * total / sum(importance_analysis['category_totals'].values())
-            f.write(f"  {cat:20s}: {total:.6f} ({pct:.2f}%)\n")
+        total_importance = sum(importance_analysis['category_totals'].values())
+        if total_importance > 0:
+            for cat, total in sorted(importance_analysis['category_totals'].items(), 
+                                    key=lambda x: x[1], reverse=True):
+                pct = 100 * total / total_importance
+                f.write(f"  {cat:20s}: {total:.6f} ({pct:.2f}%)\n")
+        else:
+            f.write("  (Unable to categorize features)\n")
         
         # Best configuration details
         f.write("\n3. BEST CONFIGURATION DETAILS\n")
@@ -540,12 +593,26 @@ def analyze_results(results_dir: str = './results/random_forest'):
         f.write(f"Test F1 (macro): {best['test_f1_mean']:.4f} "
                f"[{best['test_f1_ci_low']:.4f}, {best['test_f1_ci_high']:.4f}]\n\n")
         
+        # Per-class F1 scores
         f.write("Per-class F1 scores:\n")
-        # Assuming class names from Config
-        from random_forest_experiment import Config
-        for i, (movement, f1) in enumerate(zip(Config.MOVEMENTS, 
-                                               best['test_f1_per_class_mean'])):
-            f.write(f"  {movement:20s}: {f1:.4f}\n")
+        if 'test_f1_per_class_mean' in best and len(best['test_f1_per_class_mean']) > 0:
+            # Try to get movement names from config
+            try:
+                from random_forest_experiment import Config
+                movement_names = Config.MOVEMENTS
+            except:
+                # Fallback to generic class names
+                n_classes = len(best['test_f1_per_class_mean'])
+                movement_names = [f"Class {i}" for i in range(n_classes)]
+            
+            for i, f1 in enumerate(best['test_f1_per_class_mean']):
+                if i < len(movement_names):
+                    movement = movement_names[i]
+                else:
+                    movement = f"Class {i}"
+                f.write(f"  {movement:20s}: {f1:.4f}\n")
+        else:
+            f.write("  (Per-class F1 scores not available)\n")
     
     print(f"Saved enhanced report to {report_path}")
     

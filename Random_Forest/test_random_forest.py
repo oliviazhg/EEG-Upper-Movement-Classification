@@ -26,30 +26,37 @@ def generate_synthetic_eeg_data(n_trials_per_class=50, n_channels=60,
     Creates data where different classes have slightly different patterns
     in specific frequency bands, mimicking real motor-related EEG.
     
+    IMPORTANT: This generates 12 classes total:
+    - Class 0: Rest (will be removed in experiment)
+    - Classes 1-11: The 11 movement classes
+    
     Args:
         n_trials_per_class: Number of trials per movement class
         n_channels: Number of EEG channels
         n_samples: Samples per trial (at 2500 Hz, 5000 = 2 seconds)
-        n_classes: Number of movement classes (excluding rest)
+        n_classes: Number of movement classes (11, excluding rest)
         snr_db: Signal-to-noise ratio in dB
         seed: Random seed for reproducibility
     
     Returns:
         eeg_data: Synthetic EEG (n_trials, n_channels, n_samples)
-        labels: Class labels (n_trials,) ranging from 0 to n_classes-1
+        labels: Class labels (n_trials,) ranging from 0 to 11
+                Class 0 = rest, Classes 1-11 = movements
     """
     np.random.seed(seed)
     
-    total_trials = n_trials_per_class * n_classes
+    # Total classes = 11 movements + 1 rest = 12
+    total_classes = n_classes + 1
+    total_trials = n_trials_per_class * total_classes
     eeg_data = np.zeros((total_trials, n_channels, n_samples))
-    labels = np.repeat(np.arange(n_classes), n_trials_per_class)
+    labels = np.repeat(np.arange(total_classes), n_trials_per_class)
     
     # Sampling frequency
     fs = 2500  # Hz
     t = np.arange(n_samples) / fs
     
     print("Generating synthetic EEG data...")
-    print(f"  Classes: {n_classes}")
+    print(f"  Total classes: {total_classes} (1 rest + {n_classes} movements)")
     print(f"  Trials per class: {n_trials_per_class}")
     print(f"  Total trials: {total_trials}")
     print(f"  Channels: {n_channels}")
@@ -65,29 +72,40 @@ def generate_synthetic_eeg_data(n_trials_per_class=50, n_channels=60,
         # Base noise for all channels
         noise = np.random.randn(n_channels, n_samples)
         
-        # Add class-specific patterns
-        # Different classes have different combinations of mu and beta activity
-        for ch in range(n_channels):
-            # Class-specific mu and beta power
-            mu_amplitude = 0.5 + 0.3 * np.sin(2 * np.pi * class_label / n_classes)
-            beta_amplitude = 0.5 + 0.3 * np.cos(2 * np.pi * class_label / n_classes)
+        # Class 0 (rest) has minimal oscillatory activity
+        if class_label == 0:
+            # Just noise with very weak oscillations
+            for ch in range(n_channels):
+                signal = 0.1 * np.sin(2 * np.pi * mu_freq * t)
+                noise_power = np.var(signal) * 10  # Higher noise for rest
+                noise_scaled = np.sqrt(noise_power / np.var(noise[ch])) * noise[ch]
+                eeg_data[trial_idx, ch, :] = signal + noise_scaled
+        else:
+            # Movement classes (1-11) have class-specific patterns
+            # Use class_label - 1 to map 1-11 to 0-10 for pattern generation
+            movement_class = class_label - 1
             
-            # Add oscillations
-            mu_signal = mu_amplitude * np.sin(2 * np.pi * mu_freq * t)
-            beta_signal = beta_amplitude * np.sin(2 * np.pi * beta_freq * t)
-            
-            # Channel-specific variations (some channels more sensitive)
-            channel_weight = 0.5 + 0.5 * np.sin(2 * np.pi * ch / n_channels)
-            
-            # Combine signal and noise
-            signal = channel_weight * (mu_signal + beta_signal)
-            
-            # Apply SNR
-            signal_power = np.var(signal)
-            noise_power = signal_power / (10 ** (snr_db / 10))
-            noise_scaled = np.sqrt(noise_power / np.var(noise[ch])) * noise[ch]
-            
-            eeg_data[trial_idx, ch, :] = signal + noise_scaled
+            for ch in range(n_channels):
+                # Class-specific mu and beta power
+                mu_amplitude = 0.5 + 0.3 * np.sin(2 * np.pi * movement_class / n_classes)
+                beta_amplitude = 0.5 + 0.3 * np.cos(2 * np.pi * movement_class / n_classes)
+                
+                # Add oscillations
+                mu_signal = mu_amplitude * np.sin(2 * np.pi * mu_freq * t)
+                beta_signal = beta_amplitude * np.sin(2 * np.pi * beta_freq * t)
+                
+                # Channel-specific variations (some channels more sensitive)
+                channel_weight = 0.5 + 0.5 * np.sin(2 * np.pi * ch / n_channels)
+                
+                # Combine signal and noise
+                signal = channel_weight * (mu_signal + beta_signal)
+                
+                # Apply SNR
+                signal_power = np.var(signal)
+                noise_power = signal_power / (10 ** (snr_db / 10))
+                noise_scaled = np.sqrt(noise_power / np.var(noise[ch])) * noise[ch]
+                
+                eeg_data[trial_idx, ch, :] = signal + noise_scaled
         
         if (trial_idx + 1) % 100 == 0:
             print(f"  Generated {trial_idx + 1}/{total_trials} trials")
@@ -123,14 +141,16 @@ def save_synthetic_data(output_dir='./synthetic_data'):
     print(f"  labels.npy: {labels.shape}")
     
     # Save metadata
+    unique_labels, label_counts = np.unique(labels, return_counts=True)
+    
     metadata = {
-        'n_trials': len(labels),
-        'n_channels': eeg_data.shape[1],
-        'n_samples': eeg_data.shape[2],
-        'n_classes': len(np.unique(labels)),
+        'n_trials': int(len(labels)),
+        'n_channels': int(eeg_data.shape[1]),
+        'n_samples': int(eeg_data.shape[2]),
+        'n_classes': int(len(unique_labels)),
         'sampling_rate': 2500,
         'duration_sec': 2.0,
-        'class_distribution': dict(zip(*np.unique(labels, return_counts=True))),
+        'class_distribution': {int(k): int(v) for k, v in zip(unique_labels, label_counts)},
     }
     
     import json

@@ -1,0 +1,111 @@
+================================================================================
+POST-HOC ANALYSIS REPORT - RANDOM FOREST EXPERIMENT
+================================================================================
+
+1. STATISTICAL SIGNIFICANCE TESTS
+--------------------------------------------------------------------------------
+
+Pairwise Comparisons (Bonferroni-corrected):
+
+n100_mfsqrt vs n100_mf26:
+  Mean difference: -0.0023
+  t-statistic: -1.2166
+  p-value (uncorrected): 0.2906
+  p-value (Bonferroni): 1.0000
+  Cohen's d: -0.6470 (medium)
+  Significant: No
+
+n100_mfsqrt vs n200_mfsqrt:
+  Mean difference: -0.0009
+  t-statistic: -0.4284
+  p-value (uncorrected): 0.6904
+  p-value (Bonferroni): 1.0000
+  Cohen's d: -0.3173 (small)
+  Significant: No
+
+n100_mfsqrt vs n200_mf26:
+  Mean difference: -0.0032
+  t-statistic: -1.3958
+  p-value (uncorrected): 0.2353
+  p-value (Bonferroni): 1.0000
+  Cohen's d: -0.9325 (large)
+  Significant: No
+
+n100_mf26 vs n200_mfsqrt:
+  Mean difference: 0.0014
+  t-statistic: 1.1734
+  p-value (uncorrected): 0.3057
+  p-value (Bonferroni): 1.0000
+  Cohen's d: 0.4529 (small)
+  Significant: No
+
+n100_mf26 vs n200_mf26:
+  Mean difference: -0.0009
+  t-statistic: -0.5790
+  p-value (uncorrected): 0.5936
+  p-value (Bonferroni): 1.0000
+  Cohen's d: -0.2478 (small)
+  Significant: No
+
+n200_mfsqrt vs n200_mf26:
+  Mean difference: -0.0024
+  t-statistic: -1.7199
+  p-value (uncorrected): 0.1606
+  p-value (Bonferroni): 0.9634
+  Cohen's d: -0.7739 (medium)
+  Significant: No
+
+
+2. FEATURE IMPORTANCE ANALYSIS
+--------------------------------------------------------------------------------
+
+Top 20 Most Important Features:
+
+ 1. std_ch8                                 : 0.015248
+ 2. beta_power_ch13                         : 0.015168
+ 3. std_ch4                                 : 0.015077
+ 4. std_ch20                                : 0.014399
+ 5. beta_power_ch5                          : 0.014346
+ 6. std_ch14                                : 0.014284
+ 7. std_ch16                                : 0.013918
+ 8. std_ch13                                : 0.013887
+ 9. std_ch1                                 : 0.013862
+10. std_ch3                                 : 0.013550
+11. std_ch12                                : 0.013514
+12. beta_power_ch20                         : 0.013324
+13. std_ch6                                 : 0.013177
+14. std_ch17                                : 0.013138
+15. std_ch15                                : 0.013112
+16. beta_power_ch8                          : 0.012939
+17. std_ch5                                 : 0.012864
+18. beta_power_ch1                          : 0.012797
+19. beta_power_ch9                          : 0.012791
+20. std_ch7                                 : 0.012772
+
+Feature Category Contributions:
+
+  std_deviation       : 0.192804 (70.32%)
+  beta_power          : 0.081365 (29.68%)
+  mu_power            : 0.000000 (0.00%)
+  mean_amplitude      : 0.000000 (0.00%)
+
+3. BEST CONFIGURATION DETAILS
+--------------------------------------------------------------------------------
+
+Configuration: n_estimators=200, max_features=26
+
+Test Accuracy: 0.2672 [0.2648, 0.2708]
+Test F1 (macro): 0.2663 [0.2637, 0.2700]
+
+Per-class F1 scores:
+  forward             : 0.1718
+  backward            : 0.1760
+  left                : 0.1739
+  right               : 0.1652
+  up                  : 0.1599
+  down                : 0.1601
+  power_grasp         : 0.3125
+  precision_grasp     : 0.3280
+  lateral_grasp       : 0.3518
+  pronation           : 0.4667
+  supination          : 0.4634
