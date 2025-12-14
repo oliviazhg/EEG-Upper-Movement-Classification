@@ -1,0 +1,30 @@
+# Core dependencies for 1D-CNN EEG Classification Pipeline
+# SYDE 522 Final Project
+
+# Deep Learning
+tensorflow>=2.10.0        # CNN implementation (GPU version: tensorflow-gpu)
+keras>=2.10.0            # High-level API (included with TensorFlow 2.x)
+
+# Numerical computing
+numpy>=1.21.0
+scipy>=1.7.0
+
+# Machine learning utilities
+scikit-learn>=1.0.0      # Metrics, data splitting
+
+# Signal processing
+mne>=1.0.0               # EEG data loading and basic preprocessing
+
+# Visualization
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# Data handling
+pandas>=1.3.0            # Optional, for data organization
+
+# Utilities
+tqdm>=4.62.0             # Progress bars (optional)
+
+# Development tools (optional)
+jupyter>=1.0.0           # For notebooks
+ipython>=7.30.0
