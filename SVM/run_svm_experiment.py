@@ -13,6 +13,8 @@ import json
 import sys
 from pathlib import Path
 from datetime import datetime
+from sklearn.model_selection import train_test_split  # ADD THIS LINE
+
 
 # Import modules
 from svm_config import (
@@ -45,66 +47,55 @@ from svm_resume import (
 
 def load_data():
     """
-    Load and prepare EEG data from preprocessed NPZ files
-    
-    Returns:
-        Tuple of (X_train, y_train, X_val, y_val, X_test, y_test)
+    Load preprocessed EEG data
+    Returns FULL dataset and GRID SEARCH split
     """
-    from svm_data_loader import (
-        load_and_split_subject_data,
-        load_multiple_subjects,
-        split_data
-    )
+    from svm_data_loader import load_and_split_ml_features
     
     print("\n" + "="*70)
     print("LOADING DATA")
     print("="*70)
     
-    data_dir = Path(DATA_CONFIG.get('data_dir', '/home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/PreprocessedData2'))
+    data_file = Path(DATA_CONFIG.get('data_file'))
+    print(f"\nData file: {data_file}")
     
-    # Check if using all subjects or single subject
-    if DATA_CONFIG.get('use_all_subjects', False):
-        subject_ids = DATA_CONFIG.get('subject_ids', list(range(1, 26)))
-        
-        print(f"\nLoading {len(subject_ids)} subjects: {subject_ids}")
-        print(f"Data directory: {data_dir}")
-        
-        # Load all subjects
-        features, labels = load_multiple_subjects(
-            subject_ids=subject_ids,
-            data_dir=data_dir,
-            exclude_rest=DATA_CONFIG['exclude_rest']
-        )
-        
-        # Split data
-        X_train, y_train, X_val, y_val, X_test, y_test = split_data(
-            features, labels,
-            train_split=DATA_CONFIG['train_split'],
-            val_split=DATA_CONFIG['val_split'],
-            test_split=DATA_CONFIG['test_split'],
-            random_state=42,
-            stratify=True
-        )
-    else:
-        # Single subject mode (backward compatibility)
-        subject_id = DATA_CONFIG.get('subject_id', DATA_CONFIG['subject_ids'][0])
-        
-        print(f"\nSubject: {subject_id}")
-        print(f"Data directory: {data_dir}")
-        
-        X_train, y_train, X_val, y_val, X_test, y_test = load_and_split_subject_data(
-            subject_id=subject_id,
-            data_dir=data_dir,
-            train_split=DATA_CONFIG['train_split'],
-            val_split=DATA_CONFIG['val_split'],
-            test_split=DATA_CONFIG['test_split'],
-            random_state=42,
-            exclude_rest=DATA_CONFIG['exclude_rest'],
-            verify_dims=True
-        )
+    # Load FULL dataset (unsplit)
+    import numpy as np
+    data = np.load(data_file, allow_pickle=True)
+    X_full = data['X']
+    y_full = data['y']
     
-    return X_train, y_train, X_val, y_val, X_test, y_test
-
+    # Exclude rest class if configured
+    if DATA_CONFIG['exclude_rest']:
+        mask = y_full != 0
+        X_full = X_full[mask]
+        y_full = y_full[mask]
+        print(f"\nExcluded rest class (0)")
+        print(f"Remaining samples: {len(y_full)}")
+    
+    # Create GRID SEARCH split (fixed seed for reproducibility)
+    print(f"\nCreating grid search split (seed=42)...")
+    X_train_grid, X_temp, y_train_grid, y_temp = train_test_split(
+        X_full, y_full,
+        test_size=0.30,
+        stratify=y_full,
+        random_state=42  # Fixed for grid search
+    )
+    
+    X_val_grid, X_test_grid, y_val_grid, y_test_grid = train_test_split(
+        X_temp, y_temp,
+        test_size=0.50,
+        stratify=y_temp,
+        random_state=42
+    )
+    
+    print(f"  Grid search split: Train={len(y_train_grid)}, "
+          f"Val={len(y_val_grid)}, Test={len(y_test_grid)}")
+    
+    return (X_full, y_full,  # Full dataset for final trials
+            X_train_grid, y_train_grid,  # Grid search split
+            X_val_grid, y_val_grid,
+            X_test_grid, y_test_grid)
 
 def setup_directories():
     """Create output and checkpoint directories"""
@@ -122,25 +113,26 @@ def setup_directories():
 
 def save_results(grid_results, trial_results, aggregated, dirs):
     """Save all results to JSON files"""
+    from svm_train import convert_to_serializable
+    
     results_dir = dirs['results']
     
-    # Grid search results
-    grid_results_serializable = {
-        k: v.tolist() if isinstance(v, np.ndarray) else v
-        for k, v in grid_results.items()
-        if k != 'scaler'  # Skip scaler object
-    }
+    # Grid search results (skip scaler)
+    grid_results_copy = {k: v for k, v in grid_results.items() if k != 'scaler'}
+    grid_results_serializable = convert_to_serializable(grid_results_copy)
     
     with open(results_dir / 'grid_search_results.json', 'w') as f:
         json.dump(grid_results_serializable, f, indent=2)
     
     # Trial results
+    trial_results_serializable = convert_to_serializable(trial_results)
     with open(results_dir / 'trial_results.json', 'w') as f:
-        json.dump(trial_results, f, indent=2)
+        json.dump(trial_results_serializable, f, indent=2)
     
     # Aggregated results
+    aggregated_serializable = convert_to_serializable(aggregated)
     with open(results_dir / 'aggregated_results.json', 'w') as f:
-        json.dump(aggregated, f, indent=2)
+        json.dump(aggregated_serializable, f, indent=2)
     
     print(f"\nResults saved to: {results_dir}")
 
@@ -170,22 +162,26 @@ def main():
         return
     
     # Load data
-    X_train, y_train, X_val, y_val, X_test, y_test = load_data()
-    
+    (X_full, y_full,
+     X_train_grid, y_train_grid,
+     X_val_grid, y_val_grid,
+     X_test_grid, y_test_grid) = load_data()  
+
     # ========================================================================
     # RESUME MODE
     # ========================================================================
-    
+
     if resume_mode:
         print("\n" + "="*70)
         print("RESUME MODE ENABLED")
         print("="*70)
         
         grid_results, trial_results = resume_experiment(
-            X_train, y_train,
-            X_val, y_val,
-            X_test, y_test,
-            checkpoint_dir
+            X_full, y_full,              # Full dataset for final trials
+            X_train_grid, y_train_grid,  # Grid search split
+            X_val_grid, y_val_grid,
+            X_test_grid, y_test_grid,    # Added missing arguments
+            checkpoint_dir               # Added missing argument
         )
     
     # ========================================================================
@@ -216,8 +212,8 @@ def main():
         print("="*70)
         
         grid_results = grid_search_svm(
-            X_train, y_train,
-            X_val, y_val,
+            X_train_grid, y_train_grid,  # Fixed split
+            X_val_grid, y_val_grid,
             checkpoint_dir=checkpoint_dir
         )
         
@@ -232,12 +228,12 @@ def main():
         print("="*70)
         
         trial_results = run_final_trials(
-            X_train, y_train,
-            X_val, y_val,
-            X_test, y_test,
+            X_full, y_full,  # Pass FULL dataset
             best_C=grid_results['best_C'],
             best_gamma=grid_results['best_gamma'],
-            scaler=grid_results['scaler'],
+            train_split=DATA_CONFIG['train_split'],
+            val_split=DATA_CONFIG['val_split'],
+            test_split=DATA_CONFIG['test_split'],
             checkpoint_dir=checkpoint_dir
         )
     

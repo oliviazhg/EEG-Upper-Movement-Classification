@@ -113,9 +113,11 @@ def train_svm_single_config(
     
     # Count support vectors
     n_sv_total = len(svm.support_)
+    # Get labels of support vectors
+    sv_labels = y_train[svm.support_]
     n_sv_per_class = {
         int(cls): int(count) 
-        for cls, count in zip(*np.unique(svm.support_vectors_class_, return_counts=True))
+        for cls, count in zip(*np.unique(sv_labels, return_counts=True))
     }
     
     return {
@@ -203,7 +205,7 @@ def grid_search_svm(
             if checkpoint_dir and CHECKPOINT_CONFIG['save_grid_search']:
                 checkpoint_file = checkpoint_dir / f"grid_C{C}_gamma{gamma}.json"
                 with open(checkpoint_file, 'w') as f:
-                    json.dump(result, f, indent=2)
+                    json.dump(convert_to_serializable(result), f, indent=2)
     
     # Find best configuration
     best_idx = np.unravel_index(val_accuracy_grid.argmax(), val_accuracy_grid.shape)
@@ -305,9 +307,10 @@ def train_final_svm(
     
     # Support vectors
     n_sv_total = len(svm.support_)
+    sv_labels = y_train[svm.support_]
     n_sv_per_class = {
         int(cls): int(count)
-        for cls, count in zip(*np.unique(svm.support_vectors_class_, return_counts=True))
+        for cls, count in zip(*np.unique(sv_labels, return_counts=True))
     }
     
     return {
@@ -340,50 +343,66 @@ def train_final_svm(
 
 
 def run_final_trials(
-    X_train: np.ndarray,
-    y_train: np.ndarray,
-    X_val: np.ndarray,
-    y_val: np.ndarray,
-    X_test: np.ndarray,
-    y_test: np.ndarray,
+    X_full: np.ndarray,      # Changed: full dataset, not pre-split
+    y_full: np.ndarray,      # Changed: full labels, not pre-split
     best_C: float,
     best_gamma: float,
-    scaler: StandardScaler,
+    train_split: float = 0.70,  # New parameters
+    val_split: float = 0.15,
+    test_split: float = 0.15,
     checkpoint_dir: Optional[Path] = None
 ) -> Dict:
     """
     Phase 2: Run multiple trials with best configuration
-    
-    Args:
-        X_train, y_train: Training data
-        X_val, y_val: Validation data
-        X_test, y_test: Test data
-        best_C: Best C from grid search
-        best_gamma: Best gamma from grid search
-        scaler: Fitted scaler from grid search
-        checkpoint_dir: Directory for saving checkpoints
-        
-    Returns:
-        Dictionary with all trial results
+    Each trial uses a DIFFERENT random split
     """
+    from sklearn.model_selection import train_test_split
+    
     print("\n" + "="*70)
     print("PHASE 2: FINAL EVALUATION")
     print("="*70)
     print(f"\nBest configuration: C={best_C}, gamma={best_gamma}")
-    print(f"Running {FINAL_EVAL_CONFIG['n_trials']} independent trials\n")
+    print(f"Running {FINAL_EVAL_CONFIG['n_trials']} independent trials")
+    print("Each trial uses a different train/val/test split\n")
     
     trials = []
     
     for trial_num, seed in enumerate(FINAL_EVAL_CONFIG['seeds'], 1):
-        print(f"Trial {trial_num}/{FINAL_EVAL_CONFIG['n_trials']} (seed={seed})... ", 
-              end='', flush=True)
+        print(f"Trial {trial_num}/{FINAL_EVAL_CONFIG['n_trials']} (seed={seed}):")
         
-        result = train_final_svm(
-            X_train, y_train,
-            X_val, y_val,
-            X_test, y_test,
+        # CREATE NEW SPLIT FOR THIS TRIAL
+        print(f"  Creating split with seed {seed}...", end=' ')
+        X_train, X_temp, y_train, y_temp = train_test_split(
+            X_full, y_full,
+            test_size=(1 - train_split),
+            stratify=y_full,
+            random_state=seed  # Different seed each trial!
+        )
+        
+        X_val, X_test, y_val, y_test = train_test_split(
+            X_temp, y_temp,
+            test_size=(test_split / (val_split + test_split)),
+            stratify=y_temp,
+            random_state=seed
+        )
+        print(f"Train: {len(y_train)}, Val: {len(y_val)}, Test: {len(y_test)}")
+        
+        # FIT NEW SCALER FOR THIS SPLIT
+        print(f"  Fitting scaler...", end=' ')
+        scaler = create_scaler()
+        X_train_scaled = scaler.fit_transform(X_train)
+        X_val_scaled = scaler.transform(X_val)
+        X_test_scaled = scaler.transform(X_test)
+        print("Done")
+        
+        # TRAIN AND EVALUATE
+        print(f"  Training SVM...", end=' ', flush=True)
+        result = train_final_svm_single_trial(
+            X_train_scaled, y_train,
+            X_val_scaled, y_val,
+            X_test_scaled, y_test,
             best_C, best_gamma,
-            scaler, seed
+            seed
         )
         
         trials.append(result)
@@ -396,29 +415,127 @@ def run_final_trials(
         if checkpoint_dir and CHECKPOINT_CONFIG['save_per_trial']:
             checkpoint_file = checkpoint_dir / f"trial_{trial_num}_seed{seed}.json"
             with open(checkpoint_file, 'w') as f:
-                json.dump(result, f, indent=2)
+                json.dump(convert_to_serializable(result), f, indent=2)
     
     return {'trials': trials}
 
-
+def train_final_svm_single_trial(
+    X_train_scaled: np.ndarray,
+    y_train: np.ndarray,
+    X_val_scaled: np.ndarray,
+    y_val: np.ndarray,
+    X_test_scaled: np.ndarray,
+    y_test: np.ndarray,
+    C: float,
+    gamma: float,
+    seed: int
+) -> Dict:
+    """
+    Train SVM for a single trial (renamed from train_final_svm)
+    Data is already split and scaled for this trial
+    """
+    # Train model
+    start_time = time.time()
+    svm = SVC(C=C, gamma=gamma, kernel='rbf', random_state=seed)
+    svm.fit(X_train_scaled, y_train)
+    training_time = time.time() - start_time
+    
+    # Predictions
+    y_train_pred = svm.predict(X_train_scaled)
+    y_val_pred = svm.predict(X_val_scaled)
+    y_test_pred = svm.predict(X_test_scaled)
+    
+    # Timing inference
+    start_time = time.time()
+    _ = svm.predict(X_test_scaled)
+    inference_time_total = time.time() - start_time
+    inference_time_per_sample = inference_time_total / len(X_test_scaled)
+    
+    # Metrics
+    train_acc = accuracy_score(y_train, y_train_pred)
+    val_acc = accuracy_score(y_val, y_val_pred)
+    test_acc = accuracy_score(y_test, y_test_pred)
+    
+    train_f1 = f1_score(y_train, y_train_pred, average='macro')
+    val_f1 = f1_score(y_val, y_val_pred, average='macro')
+    test_f1 = f1_score(y_test, y_test_pred, average='macro')
+    
+    test_f1_per_class = f1_score(y_test, y_test_pred, average=None)
+    
+    conf_matrix = confusion_matrix(y_test, y_test_pred)
+    
+    # Support vectors
+    n_sv_total = len(svm.support_)
+    sv_labels = y_train[svm.support_]
+    n_sv_per_class = {
+        int(cls): int(count)
+        for cls, count in zip(*np.unique(sv_labels, return_counts=True))
+    }
+    
+    return {
+        'C': C,
+        'gamma': gamma,
+        'seed': seed,
+        
+        # Accuracies
+        'train_accuracy': float(train_acc),
+        'val_accuracy': float(val_acc),
+        'test_accuracy': float(test_acc),
+        
+        # F1 scores
+        'train_f1_macro': float(train_f1),
+        'val_f1_macro': float(val_f1),
+        'test_f1_macro': float(test_f1),
+        'test_f1_per_class': test_f1_per_class.tolist(),
+        
+        # Confusion matrix
+        'confusion_matrix': conf_matrix.tolist(),
+        
+        # Model characteristics
+        'n_support_vectors': int(n_sv_total),
+        'n_support_vectors_per_class': n_sv_per_class,
+        
+        # Timing
+        'training_time_sec': float(training_time),
+        'inference_time_per_sample': float(inference_time_per_sample),
+    }
+    
 # ============================================================================
 # CHECKPOINT MANAGEMENT
 # ============================================================================
+
+def convert_to_serializable(obj):
+    """Recursively convert numpy types to Python types for JSON serialization"""
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.bool_):
+        return bool(obj)
+    elif isinstance(obj, dict):
+        return {key: convert_to_serializable(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_to_serializable(item) for item in obj]
+    elif isinstance(obj, tuple):
+        return tuple(convert_to_serializable(item) for item in obj)
+    else:
+        return obj
+
 
 def save_checkpoint(data: Dict, filepath: Path):
     """Save checkpoint to JSON file"""
     filepath.parent.mkdir(parents=True, exist_ok=True)
     
-    # Convert numpy arrays to lists for JSON serialization
+    # Convert numpy arrays and types to JSON-serializable formats
     data_serializable = {}
     for key, value in data.items():
-        if isinstance(value, np.ndarray):
-            data_serializable[key] = value.tolist()
-        elif isinstance(value, StandardScaler):
+        if isinstance(value, StandardScaler):
             # Skip scaler (save separately if needed)
             continue
         else:
-            data_serializable[key] = value
+            data_serializable[key] = convert_to_serializable(value)
     
     with open(filepath, 'w') as f:
         json.dump(data_serializable, f, indent=2)

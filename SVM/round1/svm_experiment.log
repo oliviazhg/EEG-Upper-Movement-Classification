@@ -1,0 +1,570 @@
+✓ Configuration validated successfully
+
+SVM Experiment - 20251214_051402
+
+======================================================================
+LOADING DATA
+======================================================================
+
+Data file: /home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/PreprocessedData2/ml_features_data.npz
+This file contains ALL 25 subjects combined
+
+Loading data from: /home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/PreprocessedData2/ml_features_data.npz
+
+  Metadata:
+    Files processed: 224
+    Channel names: 22 channels
+    Filter: (8, 30) Hz
+    ICA artifact removal: True
+
+  Loaded data:
+    Total samples: 83609
+    Feature dimensions: 88
+    Unique classes: [ 0  1  2  3  4  5  6  7  8  9 10 11]
+
+  After excluding rest (class 0):
+    Remaining samples: 41154
+    Classes: [ 1  2  3  4  5  6  7  8  9 10 11]
+
+  Class distribution:
+    Class  1: 3750 samples
+    Class  2: 3750 samples
+    Class  3: 3750 samples
+    Class  4: 3750 samples
+    Class  5: 3750 samples
+    Class  6: 3750 samples
+    Class  7: 3750 samples
+    Class  8: 3750 samples
+    Class  9: 3750 samples
+    Class 10: 3703 samples
+    Class 11: 3701 samples
+
+✓ Feature dimensions: 88 features
+  Note: Expected 240 for standard extraction
+  Proceeding with 88 features...
+
+Splitting data:
+  Train: 70%
+  Val:   15%
+  Test:  15%
+  Stratify: True
+  Random seed: 42
+
+  Result:
+    Train: 28807 samples (70.0%)
+    Val:    6173 samples (15.0%)
+    Test:   6174 samples (15.0%)
+
+  Class distribution check:
+    Train:
+      Class  1: 2625 (9.1%)
+      Class  2: 2625 (9.1%)
+      Class  3: 2625 (9.1%)
+      Class  4: 2625 (9.1%)
+      Class  5: 2624 (9.1%)
+      Class  6: 2625 (9.1%)
+      Class  7: 2625 (9.1%)
+      Class  8: 2625 (9.1%)
+      Class  9: 2625 (9.1%)
+      Class 10: 2592 (9.0%)
+      Class 11: 2591 (9.0%)
+    Val:
+      Class  1:  562 (9.1%)
+      Class  2:  563 (9.1%)
+      Class  3:  562 (9.1%)
+      Class  4:  562 (9.1%)
+      Class  5:  563 (9.1%)
+      Class  6:  563 (9.1%)
+      Class  7:  562 (9.1%)
+      Class  8:  563 (9.1%)
+      Class  9:  562 (9.1%)
+      Class 10:  556 (9.0%)
+      Class 11:  555 (9.0%)
+    Test:
+      Class  1:  563 (9.1%)
+      Class  2:  562 (9.1%)
+      Class  3:  563 (9.1%)
+      Class  4:  563 (9.1%)
+      Class  5:  563 (9.1%)
+      Class  6:  562 (9.1%)
+      Class  7:  563 (9.1%)
+      Class  8:  562 (9.1%)
+      Class  9:  563 (9.1%)
+      Class 10:  555 (9.0%)
+      Class 11:  555 (9.0%)
+
+======================================================================
+WARNING: Existing checkpoints detected!
+======================================================================
+
+======================================================================
+CHECKPOINT STATUS
+======================================================================
+
+Phase 1 - Grid Search:
+  Completed configs: 2/12
+  ✗ Grid search INCOMPLETE
+    Can resume from checkpoint
+
+Phase 2 - Final Evaluation:
+  Completed trials: 0/5
+  ✗ No trials started
+======================================================================
+
+Options:
+  1. Continue anyway (will overwrite existing checkpoints)
+  2. Resume from checkpoints: python run_svm_experiment.py --resume
+  3. Check status: python run_svm_experiment.py --status
+
+Continue and overwrite? (yes/no): 
+======================================================================
+Starting Phase 1: Grid Search
+======================================================================
+
+======================================================================
+PHASE 1: GRID SEARCH
+======================================================================
+
+Scaling features...
+
+Testing 12 configurations:
+  C values: [0.1, 1, 10, 100]
+  gamma values: [0.001, 0.01, 0.1]
+
+[1/12] C=0.1, gamma=0.001... Val Acc: 0.1158 (79.5s)
+[2/12] C=0.1, gamma=0.01... Val Acc: 0.1349 (78.4s)
+[3/12] C=0.1, gamma=0.1... Val Acc: 0.1264 (84.1s)
+[4/12] C=1, gamma=0.001... Val Acc: 0.1387 (74.7s)
+[5/12] C=1, gamma=0.01... Val Acc: 0.1903 (72.6s)
+[6/12] C=1, gamma=0.1... Val Acc: 0.2040 (84.3s)
+[7/12] C=10, gamma=0.001... Val Acc: 0.1714 (70.6s)
+[8/12] C=10, gamma=0.01... Val Acc: 0.2148 (71.9s)
+[9/12] C=10, gamma=0.1... Val Acc: 0.2221 (95.9s)
+[10/12] C=100, gamma=0.001... Val Acc: 0.1981 (80.4s)
+[11/12] C=100, gamma=0.01... Val Acc: 0.2331 (95.8s)
+[12/12] C=100, gamma=0.1... Val Acc: 0.2289 (105.6s)
+
+======================================================================
+GRID SEARCH COMPLETE
+======================================================================
+Best configuration:
+  C = 100
+  gamma = 0.01
+  Validation accuracy = 0.2331
+
+Traceback (most recent call last):
+  File "/home/ubuntu/EEG-Upper-Movement-Classification/SVM/run_svm_experiment.py", line 276, in <module>
+    main()
+  File "/home/ubuntu/EEG-Upper-Movement-Classification/SVM/run_svm_experiment.py", line 195, in main
+    save_checkpoint(grid_results, checkpoint_file)
+  File "/home/ubuntu/EEG-Upper-Movement-Classification/SVM/svm_train.py", line 426, in save_checkpoint
+    json.dump(data_serializable, f, indent=2)
+  File "/usr/lib/python3.12/json/__init__.py", line 179, in dump
+    for chunk in iterable:
+  File "/usr/lib/python3.12/json/encoder.py", line 432, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/usr/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/usr/lib/python3.12/json/encoder.py", line 326, in _iterencode_list
+    yield from chunks
+  File "/usr/lib/python3.12/json/encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type int64 is not JSON serializable
+Traceback (most recent call last):
+  File "/home/ubuntu/EEG-Upper-Movement-Classification/SVM/run_svm_experiment.py", line 37, in <module>
+    from svm_visualize import generate_all_plots
+  File "/home/ubuntu/EEG-Upper-Movement-Classification/SVM/svm_visualize.py", line 8, in <module>
+    import seaborn as sns
+ModuleNotFoundError: No module named 'seaborn'
+✓ Configuration validated successfully
+
+SVM Experiment - 20251214_063644
+
+======================================================================
+LOADING DATA
+======================================================================
+
+Data file: /home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/PreprocessedData2/ml_features_data.npz
+This file contains ALL 25 subjects combined
+
+Loading data from: /home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/PreprocessedData2/ml_features_data.npz
+
+  Metadata:
+    Files processed: 224
+    Channel names: 22 channels
+    Filter: (8, 30) Hz
+    ICA artifact removal: True
+
+  Loaded data:
+    Total samples: 83609
+    Feature dimensions: 88
+    Unique classes: [ 0  1  2  3  4  5  6  7  8  9 10 11]
+
+  After excluding rest (class 0):
+    Remaining samples: 41154
+    Classes: [ 1  2  3  4  5  6  7  8  9 10 11]
+
+  Class distribution:
+    Class  1: 3750 samples
+    Class  2: 3750 samples
+    Class  3: 3750 samples
+    Class  4: 3750 samples
+    Class  5: 3750 samples
+    Class  6: 3750 samples
+    Class  7: 3750 samples
+    Class  8: 3750 samples
+    Class  9: 3750 samples
+    Class 10: 3703 samples
+    Class 11: 3701 samples
+
+✓ Feature dimensions: 88 features
+  Note: Expected 240 for standard extraction
+  Proceeding with 88 features...
+
+Splitting data:
+  Train: 70%
+  Val:   15%
+  Test:  15%
+  Stratify: True
+  Random seed: 42
+
+  Result:
+    Train: 28807 samples (70.0%)
+    Val:    6173 samples (15.0%)
+    Test:   6174 samples (15.0%)
+
+  Class distribution check:
+    Train:
+      Class  1: 2625 (9.1%)
+      Class  2: 2625 (9.1%)
+      Class  3: 2625 (9.1%)
+      Class  4: 2625 (9.1%)
+      Class  5: 2624 (9.1%)
+      Class  6: 2625 (9.1%)
+      Class  7: 2625 (9.1%)
+      Class  8: 2625 (9.1%)
+      Class  9: 2625 (9.1%)
+      Class 10: 2592 (9.0%)
+      Class 11: 2591 (9.0%)
+    Val:
+      Class  1:  562 (9.1%)
+      Class  2:  563 (9.1%)
+      Class  3:  562 (9.1%)
+      Class  4:  562 (9.1%)
+      Class  5:  563 (9.1%)
+      Class  6:  563 (9.1%)
+      Class  7:  562 (9.1%)
+      Class  8:  563 (9.1%)
+      Class  9:  562 (9.1%)
+      Class 10:  556 (9.0%)
+      Class 11:  555 (9.0%)
+    Test:
+      Class  1:  563 (9.1%)
+      Class  2:  562 (9.1%)
+      Class  3:  563 (9.1%)
+      Class  4:  563 (9.1%)
+      Class  5:  563 (9.1%)
+      Class  6:  562 (9.1%)
+      Class  7:  563 (9.1%)
+      Class  8:  562 (9.1%)
+      Class  9:  563 (9.1%)
+      Class 10:  555 (9.0%)
+      Class 11:  555 (9.0%)
+
+======================================================================
+RESUME MODE ENABLED
+======================================================================
+
+======================================================================
+CHECKPOINT STATUS
+======================================================================
+
+Phase 1 - Grid Search:
+  Completed configs: 12/12
+  ✓ Grid search COMPLETE
+    File: grid_search_complete_20251214_051402.json
+
+Phase 2 - Final Evaluation:
+  Completed trials: 0/5
+  ✗ No trials started
+======================================================================
+
+======================================================================
+RESUMING PHASE 1: GRID SEARCH
+======================================================================
+
+Grid search already complete - loading results...
+Traceback (most recent call last):
+  File "/home/ubuntu/EEG-Upper-Movement-Classification/SVM/run_svm_experiment.py", line 277, in <module>
+    main()
+  File "/home/ubuntu/EEG-Upper-Movement-Classification/SVM/run_svm_experiment.py", line 154, in main
+    grid_results, trial_results = resume_experiment(
+                                  ^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/EEG-Upper-Movement-Classification/SVM/svm_resume.py", line 368, in resume_experiment
+    grid_results = resume_grid_search(
+                   ^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/EEG-Upper-Movement-Classification/SVM/svm_resume.py", line 144, in resume_grid_search
+    grid_results = json.load(f)
+                   ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 61 column 5 (char 981)
+✓ Configuration validated successfully
+
+SVM Experiment - 20251214_064419
+
+======================================================================
+LOADING DATA
+======================================================================
+
+Data file: /home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/PreprocessedData2/ml_features_data.npz
+This file contains ALL 25 subjects combined
+
+Loading data from: /home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/PreprocessedData2/ml_features_data.npz
+
+  Metadata:
+    Files processed: 224
+    Channel names: 22 channels
+    Filter: (8, 30) Hz
+    ICA artifact removal: True
+
+  Loaded data:
+    Total samples: 83609
+    Feature dimensions: 88
+    Unique classes: [ 0  1  2  3  4  5  6  7  8  9 10 11]
+
+  After excluding rest (class 0):
+    Remaining samples: 41154
+    Classes: [ 1  2  3  4  5  6  7  8  9 10 11]
+
+  Class distribution:
+    Class  1: 3750 samples
+    Class  2: 3750 samples
+    Class  3: 3750 samples
+    Class  4: 3750 samples
+    Class  5: 3750 samples
+    Class  6: 3750 samples
+    Class  7: 3750 samples
+    Class  8: 3750 samples
+    Class  9: 3750 samples
+    Class 10: 3703 samples
+    Class 11: 3701 samples
+
+✓ Feature dimensions: 88 features
+  Note: Expected 240 for standard extraction
+  Proceeding with 88 features...
+
+Splitting data:
+  Train: 70%
+  Val:   15%
+  Test:  15%
+  Stratify: True
+  Random seed: 42
+
+  Result:
+    Train: 28807 samples (70.0%)
+    Val:    6173 samples (15.0%)
+    Test:   6174 samples (15.0%)
+
+  Class distribution check:
+    Train:
+      Class  1: 2625 (9.1%)
+      Class  2: 2625 (9.1%)
+      Class  3: 2625 (9.1%)
+      Class  4: 2625 (9.1%)
+      Class  5: 2624 (9.1%)
+      Class  6: 2625 (9.1%)
+      Class  7: 2625 (9.1%)
+      Class  8: 2625 (9.1%)
+      Class  9: 2625 (9.1%)
+      Class 10: 2592 (9.0%)
+      Class 11: 2591 (9.0%)
+    Val:
+      Class  1:  562 (9.1%)
+      Class  2:  563 (9.1%)
+      Class  3:  562 (9.1%)
+      Class  4:  562 (9.1%)
+      Class  5:  563 (9.1%)
+      Class  6:  563 (9.1%)
+      Class  7:  562 (9.1%)
+      Class  8:  563 (9.1%)
+      Class  9:  562 (9.1%)
+      Class 10:  556 (9.0%)
+      Class 11:  555 (9.0%)
+    Test:
+      Class  1:  563 (9.1%)
+      Class  2:  562 (9.1%)
+      Class  3:  563 (9.1%)
+      Class  4:  563 (9.1%)
+      Class  5:  563 (9.1%)
+      Class  6:  562 (9.1%)
+      Class  7:  563 (9.1%)
+      Class  8:  562 (9.1%)
+      Class  9:  563 (9.1%)
+      Class 10:  555 (9.0%)
+      Class 11:  555 (9.0%)
+
+======================================================================
+RESUME MODE ENABLED
+======================================================================
+
+======================================================================
+CHECKPOINT STATUS
+======================================================================
+
+Phase 1 - Grid Search:
+  Completed configs: 12/12
+  ✗ Grid search INCOMPLETE
+    Can resume from checkpoint
+
+Phase 2 - Final Evaluation:
+  Completed trials: 0/5
+  ✗ No trials started
+======================================================================
+
+======================================================================
+RESUMING PHASE 1: GRID SEARCH
+======================================================================
+
+Found 12 completed configurations
+Loading completed configs and continuing...
+[1/12] C=0.1, gamma=0.001... ✓ LOADED from checkpoint (Val Acc: 0.1158)
+[2/12] C=0.1, gamma=0.01... ✓ LOADED from checkpoint (Val Acc: 0.1349)
+[3/12] C=0.1, gamma=0.1... ✓ LOADED from checkpoint (Val Acc: 0.1264)
+[4/12] C=1, gamma=0.001... ✓ LOADED from checkpoint (Val Acc: 0.1387)
+[5/12] C=1, gamma=0.01... ✓ LOADED from checkpoint (Val Acc: 0.1903)
+[6/12] C=1, gamma=0.1... ✓ LOADED from checkpoint (Val Acc: 0.2040)
+[7/12] C=10, gamma=0.001... ✓ LOADED from checkpoint (Val Acc: 0.1714)
+[8/12] C=10, gamma=0.01... ✓ LOADED from checkpoint (Val Acc: 0.2148)
+[9/12] C=10, gamma=0.1... ✓ LOADED from checkpoint (Val Acc: 0.2221)
+[10/12] C=100, gamma=0.001... ✓ LOADED from checkpoint (Val Acc: 0.1981)
+[11/12] C=100, gamma=0.01... ✓ LOADED from checkpoint (Val Acc: 0.2331)
+[12/12] C=100, gamma=0.1... ✓ LOADED from checkpoint (Val Acc: 0.2289)
+
+======================================================================
+GRID SEARCH COMPLETE
+======================================================================
+Best configuration:
+  C = 100
+  gamma = 0.01
+  Validation accuracy = 0.2331
+
+
+======================================================================
+RESUMING PHASE 2: FINAL EVALUATION
+======================================================================
+
+Best configuration: C=100, gamma=0.01
+
+Running 5 remaining trials...
+Trial 1/5 (seed=0)... Test Acc: 0.2405, F1: 0.2421, SVs: 28350
+Trial 2/5 (seed=1)... Test Acc: 0.2405, F1: 0.2421, SVs: 28350
+Trial 3/5 (seed=2)... Test Acc: 0.2405, F1: 0.2421, SVs: 28350
+Trial 4/5 (seed=3)... Test Acc: 0.2405, F1: 0.2421, SVs: 28350
+Trial 5/5 (seed=4)... Test Acc: 0.2405, F1: 0.2421, SVs: 28350
+
+======================================================================
+Starting Phase 3: Analysis
+======================================================================
+
+======================================================================
+FINAL RESULTS SUMMARY
+======================================================================
+
+Configuration:
+  C = 100
+  gamma = 0.01
+  Number of trials = 5
+
+Test Performance:
+  Accuracy: 0.2405 [0.2405, 0.2405]
+  F1 Macro: 0.2421 [0.2421, 0.2421]
+
+Training Performance:
+  Train Accuracy: 0.7121 ± 0.0000
+  Val Accuracy: 0.2331 ± 0.0000
+
+Model Characteristics:
+  Support Vectors: 28350.0 ± 0.0
+  Training Time: 97.33s ± 0.30s
+
+Per-Class F1 Scores:
+  pronation           : 0.4081 ± 0.0000
+  supination          : 0.3676 ± 0.0000
+  lateral_grasp       : 0.3158 ± 0.0000
+  power_grasp         : 0.3152 ± 0.0000
+  precision_grasp     : 0.2860 ± 0.0000
+  forward             : 0.1926 ± 0.0000
+  backward            : 0.1664 ± 0.0000
+  left                : 0.1662 ± 0.0000
+  down                : 0.1537 ± 0.0000
+  right               : 0.1477 ± 0.0000
+  up                  : 0.1434 ± 0.0000
+======================================================================
+
+======================================================================
+CONFUSION ANALYSIS
+======================================================================
+
+Top 10 Most Confused Class Pairs:
+ 1. supination           → pronation           : 46.31%
+ 2. pronation            → supination          : 34.59%
+ 3. precision_grasp      → power_grasp         : 32.92%
+ 4. precision_grasp      → lateral_grasp       : 30.07%
+ 5. lateral_grasp        → power_grasp         : 29.48%
+ 6. power_grasp          → precision_grasp     : 28.60%
+ 7. power_grasp          → lateral_grasp       : 25.40%
+ 8. lateral_grasp        → precision_grasp     : 24.69%
+ 9. down                 → forward             : 21.17%
+10. right                → forward             : 20.60%
+======================================================================
+
+======================================================================
+Starting Phase 4: Visualization
+======================================================================
+
+Generating plots...
+Saved: figures/svm/grid_search_heatmap.png
+Saved: figures/svm/final_performance.png
+Saved: figures/svm/confusion_matrix.png
+Saved: figures/svm/per_class_f1.png
+Saved: figures/svm/training_time_heatmap.png
+
+All plots saved to: figures/svm
+
+Results saved to: results/svm
+
+======================================================================
+EXPERIMENT COMPLETE
+======================================================================
+
+Best Configuration:
+  C = 100
+  gamma = 0.01
+
+Final Performance:
+  Test Accuracy: 0.2405 ± 0.0000
+  95% CI: [0.2405, 0.2405]
+  Test F1: 0.2421 ± 0.0000
+
+Outputs:
+  Results: results/svm
+  Figures: figures/svm
+  Checkpoints: checkpoints/svm
+
+To clean up checkpoints:
+  from svm_resume import cleanup_checkpoints
+  cleanup_checkpoints(Path('checkpoints/svm'))
+======================================================================

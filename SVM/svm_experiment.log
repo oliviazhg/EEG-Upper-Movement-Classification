@@ -1,0 +1,190 @@
+✓ Configuration validated successfully
+
+SVM Experiment - 20251214_165649
+
+======================================================================
+LOADING DATA
+======================================================================
+
+Data file: /home/ubuntu/multimodal-signal-dataset-for-11-upper-body-movements/PreprocessedData2/ml_features_data.npz
+
+Excluded rest class (0)
+Remaining samples: 41154
+
+Creating grid search split (seed=42)...
+  Grid search split: Train=28807, Val=6173, Test=6174
+
+======================================================================
+RESUME MODE ENABLED
+======================================================================
+
+======================================================================
+CHECKPOINT STATUS
+======================================================================
+
+Phase 1 - Grid Search:
+  Completed configs: 12/12
+  ✗ Grid search INCOMPLETE
+    Can resume from checkpoint
+
+Phase 2 - Final Evaluation:
+  Completed trials: 0/5
+  ✗ No trials started
+======================================================================
+
+======================================================================
+RESUMING PHASE 1: GRID SEARCH
+======================================================================
+
+Found 12 completed configurations
+Loading completed configs and continuing...
+[1/12] C=0.1, gamma=0.001... ✓ LOADED from checkpoint (Val Acc: 0.1160)
+[2/12] C=0.1, gamma=0.01... ✓ LOADED from checkpoint (Val Acc: 0.1348)
+[3/12] C=0.1, gamma=0.1... ✓ LOADED from checkpoint (Val Acc: 0.1234)
+[4/12] C=1, gamma=0.001... ✓ LOADED from checkpoint (Val Acc: 0.1343)
+[5/12] C=1, gamma=0.01... ✓ LOADED from checkpoint (Val Acc: 0.1852)
+[6/12] C=1, gamma=0.1... ✓ LOADED from checkpoint (Val Acc: 0.2140)
+[7/12] C=10, gamma=0.001... ✓ LOADED from checkpoint (Val Acc: 0.1662)
+[8/12] C=10, gamma=0.01... ✓ LOADED from checkpoint (Val Acc: 0.2155)
+[9/12] C=10, gamma=0.1... ✓ LOADED from checkpoint (Val Acc: 0.2328)
+[10/12] C=100, gamma=0.001... ✓ LOADED from checkpoint (Val Acc: 0.1994)
+[11/12] C=100, gamma=0.01... ✓ LOADED from checkpoint (Val Acc: 0.2373)
+[12/12] C=100, gamma=0.1... ✓ LOADED from checkpoint (Val Acc: 0.2295)
+
+======================================================================
+GRID SEARCH COMPLETE
+======================================================================
+Best configuration:
+  C = 100
+  gamma = 0.01
+  Validation accuracy = 0.2373
+
+
+======================================================================
+RESUMING PHASE 2: FINAL EVALUATION
+======================================================================
+
+Running 5 remaining trials...
+
+======================================================================
+PHASE 2: FINAL EVALUATION
+======================================================================
+
+Best configuration: C=100, gamma=0.01
+Running 5 independent trials
+Each trial uses a different train/val/test split
+
+Trial 1/5 (seed=0):
+  Creating split with seed 0... Train: 28807, Val: 6173, Test: 6174
+  Fitting scaler... Done
+  Training SVM... Test Acc: 0.2421, F1: 0.2439, SVs: 28343
+Trial 2/5 (seed=1):
+  Creating split with seed 1... Train: 28807, Val: 6173, Test: 6174
+  Fitting scaler... Done
+  Training SVM... Test Acc: 0.2352, F1: 0.2359, SVs: 28316
+Trial 3/5 (seed=2):
+  Creating split with seed 2... Train: 28807, Val: 6173, Test: 6174
+  Fitting scaler... Done
+  Training SVM... Test Acc: 0.2455, F1: 0.2463, SVs: 28352
+Trial 4/5 (seed=3):
+  Creating split with seed 3... Train: 28807, Val: 6173, Test: 6174
+  Fitting scaler... Done
+  Training SVM... Test Acc: 0.2431, F1: 0.2445, SVs: 28367
+Trial 5/5 (seed=4):
+  Creating split with seed 4... Train: 28807, Val: 6173, Test: 6174
+  Fitting scaler... Done
+  Training SVM... Test Acc: 0.2383, F1: 0.2391, SVs: 28330
+
+======================================================================
+Starting Phase 3: Analysis
+======================================================================
+
+======================================================================
+FINAL RESULTS SUMMARY
+======================================================================
+
+Configuration:
+  C = 100
+  gamma = 0.01
+  Number of trials = 5
+
+Test Performance:
+  Accuracy: 0.2408 [0.2378, 0.2439]
+  F1 Macro: 0.2419 [0.2382, 0.2449]
+
+Training Performance:
+  Train Accuracy: 0.7094 ± 0.0020
+  Val Accuracy: 0.2385 ± 0.0056
+
+Model Characteristics:
+  Support Vectors: 28341.6 ± 19.7
+  Training Time: 94.73s ± 1.89s
+
+Per-Class F1 Scores:
+  pronation           : 0.4236 ± 0.0156
+  supination          : 0.3969 ± 0.0135
+  lateral_grasp       : 0.3167 ± 0.0173
+  power_grasp         : 0.2964 ± 0.0118
+  precision_grasp     : 0.2739 ± 0.0174
+  forward             : 0.1818 ± 0.0109
+  backward            : 0.1720 ± 0.0217
+  left                : 0.1703 ± 0.0053
+  right               : 0.1500 ± 0.0094
+  down                : 0.1438 ± 0.0170
+  up                  : 0.1359 ± 0.0115
+======================================================================
+
+======================================================================
+CONFUSION ANALYSIS
+======================================================================
+
+Top 10 Most Confused Class Pairs:
+ 1. supination           → pronation           : 44.32%
+ 2. precision_grasp      → power_grasp         : 36.33%
+ 3. pronation            → supination          : 35.46%
+ 4. lateral_grasp        → power_grasp         : 30.48%
+ 5. power_grasp          → lateral_grasp       : 28.56%
+ 6. power_grasp          → precision_grasp     : 27.13%
+ 7. precision_grasp      → lateral_grasp       : 26.98%
+ 8. lateral_grasp        → precision_grasp     : 26.25%
+ 9. left                 → forward             : 20.98%
+10. right                → forward             : 20.86%
+======================================================================
+
+======================================================================
+Starting Phase 4: Visualization
+======================================================================
+
+Generating plots...
+Saved: figures/svm/grid_search_heatmap.png
+Saved: figures/svm/final_performance.png
+Saved: figures/svm/confusion_matrix.png
+Saved: figures/svm/per_class_f1.png
+Saved: figures/svm/training_time_heatmap.png
+
+All plots saved to: figures/svm
+
+Results saved to: results/svm
+
+======================================================================
+EXPERIMENT COMPLETE
+======================================================================
+
+Best Configuration:
+  C = 100
+  gamma = 0.01
+
+Final Performance:
+  Test Accuracy: 0.2408 ± 0.0041
+  95% CI: [0.2378, 0.2439]
+  Test F1: 0.2419 ± 0.0043
+
+Outputs:
+  Results: results/svm
+  Figures: figures/svm
+  Checkpoints: checkpoints/svm
+
+To clean up checkpoints:
+  from svm_resume import cleanup_checkpoints
+  cleanup_checkpoints(Path('checkpoints/svm'))
+======================================================================

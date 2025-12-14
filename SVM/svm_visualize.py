@@ -14,7 +14,13 @@ from svm_config import CLASS_LABELS, PLOT_CONFIG
 
 def setup_plotting_style():
     """Set up consistent plotting style"""
-    plt.style.use('seaborn-v0_8-darkgrid')
+    try:
+        plt.style.use('seaborn-v0_8-darkgrid')
+    except:
+        try:
+            plt.style.use('seaborn-darkgrid')
+        except:
+            pass  # Fallback to default
     sns.set_palette("husl")
     plt.rcParams['figure.dpi'] = PLOT_CONFIG['dpi']
     plt.rcParams['font.size'] = 10

@@ -254,41 +254,26 @@ def resume_grid_search(
 # ============================================================================
 
 def resume_final_trials(
-    X_train: np.ndarray,
-    y_train: np.ndarray,
-    X_val: np.ndarray,
-    y_val: np.ndarray,
-    X_test: np.ndarray,
-    y_test: np.ndarray,
+    X_full: np.ndarray,
+    y_full: np.ndarray,
     best_C: float,
     best_gamma: float,
-    scaler,
+    train_split: float,
+    val_split: float,
+    test_split: float,
     checkpoint_dir: Path,
     status: Dict
 ) -> Dict:
-    """
-    Resume final evaluation from checkpoints
-    
-    Args:
-        X_train, y_train, X_val, y_val, X_test, y_test: Data
-        best_C, best_gamma: Best hyperparameters
-        scaler: Fitted scaler
-        checkpoint_dir: Checkpoint directory
-        status: Checkpoint status
-        
-    Returns:
-        Dictionary with all trial results
-    """
-    from svm_train import train_final_svm
+    """Resume final evaluation from checkpoints"""
+    from svm_train import run_final_trials
+    from svm_config import DATA_CONFIG
     
     print("\n" + "="*70)
     print("RESUMING PHASE 2: FINAL EVALUATION")
     print("="*70)
-    print(f"\nBest configuration: C={best_C}, gamma={best_gamma}")
-    
-    trials = []
     
     # Load completed trials
+    trials = []
     if status['n_trials_complete'] > 0:
         print(f"\nLoading {status['n_trials_complete']} completed trials...")
         for trial_file in sorted(status['trial_files']):
@@ -296,41 +281,36 @@ def resume_final_trials(
                 trial_result = json.load(f)
             trials.append(trial_result)
             trial_num = int(trial_file.stem.split('_')[1])
-            print(f"  ✓ Trial {trial_num} loaded (Test Acc: {trial_result['test_accuracy']:.4f})")
+            print(f"  ✓ Trial {trial_num} loaded")
     
     # Run remaining trials
-    remaining_trials = FINAL_EVAL_CONFIG['n_trials'] - status['n_trials_complete']
+    remaining = FINAL_EVAL_CONFIG['n_trials'] - status['n_trials_complete']
     
-    if remaining_trials > 0:
-        print(f"\nRunning {remaining_trials} remaining trials...")
+    if remaining > 0:
+        print(f"\nRunning {remaining} remaining trials...")
         
-        for trial_num in range(status['n_trials_complete'] + 1, 
-                              FINAL_EVAL_CONFIG['n_trials'] + 1):
-            seed = FINAL_EVAL_CONFIG['seeds'][trial_num - 1]
-            
-            print(f"Trial {trial_num}/{FINAL_EVAL_CONFIG['n_trials']} (seed={seed})... ", 
-                  end='', flush=True)
-            
-            result = train_final_svm(
-                X_train, y_train,
-                X_val, y_val,
-                X_test, y_test,
-                best_C, best_gamma,
-                scaler, seed
-            )
-            
-            trials.append(result)
-            
-            print(f"Test Acc: {result['test_accuracy']:.4f}, "
-                  f"F1: {result['test_f1_macro']:.4f}, "
-                  f"SVs: {result['n_support_vectors']}")
-            
-            # Save checkpoint
-            checkpoint_file = checkpoint_dir / f"trial_{trial_num}_seed{seed}.json"
-            with open(checkpoint_file, 'w') as f:
-                json.dump(result, f, indent=2)
-    else:
-        print("\n✓ All trials already complete")
+        # Create custom seed list for remaining trials
+        remaining_seeds = FINAL_EVAL_CONFIG['seeds'][status['n_trials_complete']:]
+        
+        # Temporarily modify config
+        original_seeds = FINAL_EVAL_CONFIG['seeds']
+        original_n_trials = FINAL_EVAL_CONFIG['n_trials']
+        FINAL_EVAL_CONFIG['seeds'] = remaining_seeds
+        FINAL_EVAL_CONFIG['n_trials'] = len(remaining_seeds)
+        
+        # Run trials
+        remaining_results = run_final_trials(
+            X_full, y_full,
+            best_C, best_gamma,
+            train_split, val_split, test_split,
+            checkpoint_dir
+        )
+        
+        trials.extend(remaining_results['trials'])
+        
+        # Restore original config
+        FINAL_EVAL_CONFIG['seeds'] = original_seeds
+        FINAL_EVAL_CONFIG['n_trials'] = original_n_trials
     
     return {'trials': trials}
 
@@ -340,46 +320,51 @@ def resume_final_trials(
 # ============================================================================
 
 def resume_experiment(
-    X_train: np.ndarray,
-    y_train: np.ndarray,
-    X_val: np.ndarray,
-    y_val: np.ndarray,
-    X_test: np.ndarray,
-    y_test: np.ndarray,
+    X_full: np.ndarray,      # NEW: full dataset
+    y_full: np.ndarray,      # NEW: full labels
+    X_train_grid: np.ndarray,  # Grid search split
+    y_train_grid: np.ndarray,
+    X_val_grid: np.ndarray,
+    y_val_grid: np.ndarray,
+    X_test_grid: np.ndarray,  # Not used but kept for consistency
+    y_test_grid: np.ndarray,  # Not used but kept for consistency
     checkpoint_dir: Path
 ) -> Tuple[Dict, Dict]:
     """
     Resume experiment from any checkpoint state
     
     Args:
-        X_train, y_train: Training data
-        X_val, y_val: Validation data
-        X_test, y_test: Test data
+        X_full, y_full: Full dataset for final trials
+        X_train_grid, y_train_grid: Training data for grid search
+        X_val_grid, y_val_grid: Validation data for grid search
+        X_test_grid, y_test_grid: Test data (not used in resume)
         checkpoint_dir: Checkpoint directory
         
     Returns:
         Tuple of (grid_results, trial_results)
     """
+    from svm_config import DATA_CONFIG
+    
     # Detect checkpoint status
     status = detect_checkpoints(checkpoint_dir)
     print_checkpoint_status(status)
     
-    # Resume grid search
+    # Resume grid search (uses grid split)
     grid_results = resume_grid_search(
-        X_train, y_train,
-        X_val, y_val,
+        X_train_grid, y_train_grid,
+        X_val_grid, y_val_grid,
         checkpoint_dir,
         status
     )
     
-    # Resume final trials
+    # Resume final trials (uses full dataset)
     trial_results = resume_final_trials(
-        X_train, y_train,
-        X_val, y_val,
-        X_test, y_test,
+        X_full, y_full,  # Pass full dataset
         grid_results['best_C'],
         grid_results['best_gamma'],
-        grid_results['scaler'],
+        DATA_CONFIG['train_split'],
+        DATA_CONFIG['val_split'],
+        DATA_CONFIG['test_split'],
         checkpoint_dir,
         status
     )
