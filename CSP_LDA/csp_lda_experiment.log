@@ -1,0 +1,181 @@
+✓ GPU detected - CuPy enabled
+  Device: 80
+  VRAM: 0.0 GB used
+
+======================================================================
+GPU ACCELERATION ENABLED
+======================================================================
+Active GPU: <CUDA Device 0>
+======================================================================
+
+======================================================================
+LOADING DATA
+======================================================================
+
+Metadata found:
+  Filter: (8, 30)
+  Sampling rate: 2500 Hz
+  Channel names: 22 channels
+
+Raw data loaded:
+  X shape: (83609, 22, 7500)
+  y shape: (83609,)
+  Data size: 110.36 GB
+  Unique classes in y: [ 0  1  2  3  4  5  6  7  8  9 10 11]
+
+⚠ WARNING: Large dataset (110.4 GB)
+  This will take longer to process
+  GPU filtering will use batching to manage memory
+  Estimated GPU batch size: ~100-200 trials at a time
+
+After rest class removal:
+  X shape: (41154, 22, 7500)
+  y shape: (41154,)
+  Number of classes: 11
+  Class range: 0 to 10
+
+  Class distribution:
+    Class 0:  3750 trials ( 9.11%)
+    Class 1:  3750 trials ( 9.11%)
+    Class 2:  3750 trials ( 9.11%)
+    Class 3:  3750 trials ( 9.11%)
+    Class 4:  3750 trials ( 9.11%)
+    Class 5:  3750 trials ( 9.11%)
+    Class 6:  3750 trials ( 9.11%)
+    Class 7:  3750 trials ( 9.11%)
+    Class 8:  3750 trials ( 9.11%)
+    Class 9:  3703 trials ( 9.00%)
+    Class 10:  3701 trials ( 8.99%)
+
+  First 20 labels: [7 8 6 8 8 7 8 7 7 6 8 8 6 6 7 6 8 7 6 6]
+  Last 20 labels:  [10  9  9  9  9 10  9 10  9  9 10  9  9 10  9 10  9 10 10 10]
+
+✓ Data validation passed
+======================================================================
+
+
+============================================================
+CHECKPOINT FOUND
+============================================================
+  Timestamp: 2025-12-15 00:09:17
+  Completed trials: 8
+  Last trial: 8
+============================================================
+
+
+============================================================
+Starting CSP+LDA Experiments
+============================================================
+Total configurations: 4
+Trials per configuration: 3
+Total trials: 12
+Already completed: 8
+Remaining: 4
+GPU acceleration: ENABLED
+============================================================
+
+
+[Trial 1/12] - SKIPPED (already completed)
+  Configuration: combined_2_seed0
+
+[Trial 2/12] - SKIPPED (already completed)
+  Configuration: combined_2_seed1
+
+[Trial 3/12] - SKIPPED (already completed)
+  Configuration: combined_2_seed2
+
+[Trial 4/12] - SKIPPED (already completed)
+  Configuration: combined_4_seed0
+
+[Trial 5/12] - SKIPPED (already completed)
+  Configuration: combined_4_seed1
+
+[Trial 6/12] - SKIPPED (already completed)
+  Configuration: combined_4_seed2
+
+[Trial 7/12] - SKIPPED (already completed)
+  Configuration: combined_6_seed0
+
+[Trial 8/12] - SKIPPED (already completed)
+  Configuration: combined_6_seed1
+
+[Trial 9/12]
+
+============================================================
+Trial: combined, 6 components, seed 2
+============================================================
+  ✓ RAM: 59.1/232.2 GB (25.4%) at trial start
+Using preprocessed data (already filtered to 8-30 Hz)
+Splitting data...
+  Stratification check:
+    Max diff (train vs test): 0.0001
+    Max diff (val vs test):   0.0002
+    ✓ Stratification verified (within 2% tolerance)
+Train: 28807, Val: 6173, Test: 6174
+  ✓ RAM: 114.5/232.2 GB (49.3%) after data split
+Training CSP+LDA...
+  ✓ RAM: 114.5/232.2 GB (49.3%) before CSP fit
+  Fitting CSP...
+Computing rank from data with rank=None
+    Using tolerance 2.4e+05 (2.2e-16 eps * 22 dim * 4.9e+19  max singular value)
+    Estimated rank (data): 22
+    data: rank 22 computed from 22 data channels with 0 projectors
+Reducing data rank from 22 -> 22
+Estimating class=0 covariance using EMPIRICAL
+Done.
+Estimating class=1 covariance using EMPIRICAL
+Done.
+Estimating class=2 covariance using EMPIRICAL
+Done.
+Estimating class=3 covariance using EMPIRICAL
+Done.
+Estimating class=4 covariance using EMPIRICAL
+Done.
+Estimating class=5 covariance using EMPIRICAL
+Done.
+Estimating class=6 covariance using EMPIRICAL
+Done.
+Estimating class=7 covariance using EMPIRICAL
+Done.
+Estimating class=8 covariance using EMPIRICAL
+Done.
+Estimating class=9 covariance using EMPIRICAL
+Done.
+Estimating class=10 covariance using EMPIRICAL
+Done.
+  ✓ RAM: 125.8/232.2 GB (54.2%) after CSP fit
+  Transforming validation data...
+  Transforming test data...
+  ✓ RAM: 125.8/232.2 GB (54.2%) after CSP transform
+  Training LDA...
+  Making predictions...
+  ✓ RAM: 125.8/232.2 GB (54.2%) after LDA training
+
+Results:
+  Train Accuracy: 0.1415
+  Val Accuracy:   0.1319
+  Test Accuracy:  0.1354
+  Test F1 (macro): 0.1190
+  Training time:  261.25s
+  ✓ RAM: 125.8/232.2 GB (54.2%) at trial end
+  GPU memory: 0.00 GB used, 0.00 GB total
+  ✓ Checkpoint saved: 9 trials completed
+
+[Trial 10/12]
+
+============================================================
+Trial: combined, 8 components, seed 0
+============================================================
+  ✓ RAM: 71.4/232.2 GB (30.7%) at trial start
+Using preprocessed data (already filtered to 8-30 Hz)
+Splitting data...
+  Stratification check:
+    Max diff (train vs test): 0.0001
+    Max diff (val vs test):   0.0002
+    ✓ Stratification verified (within 2% tolerance)
+Train: 28807, Val: 6173, Test: 6174
+  ✓ RAM: 126.7/232.2 GB (54.6%) after data split
+Training CSP+LDA...
+  ✓ RAM: 126.7/232.2 GB (54.6%) before CSP fit
+  Fitting CSP...
+Computing rank from data with rank=None

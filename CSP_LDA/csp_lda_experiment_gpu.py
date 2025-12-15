@@ -3,20 +3,38 @@ CSP+LDA Experiment for EEG-Based Upper-Limb Movement Classification
 SYDE 522 - Foundations of Artificial Intelligence
 Author: Olivia Zheng
 
-CORRECTED VERSION - Matches preprocessing output format
+GPU-ACCELERATED VERSION with CHECKPOINT SUPPORT for Lambda Labs A100
 
 This script implements the Common Spatial Patterns + Linear Discriminant Analysis
-pipeline for classifying 11 upper-limb movements from EEG signals.
+pipeline with GPU acceleration for filtering operations and checkpoint functionality
+to resume from interruptions.
 """
 
 import numpy as np
 import pandas as pd
 import pickle
 import time
+import gc
+import psutil
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 import warnings
 warnings.filterwarnings('ignore')
+
+# Try to import CuPy for GPU acceleration
+try:
+    import cupy as cp
+    from cupyx.scipy import signal as cp_signal
+    GPU_AVAILABLE = cp.cuda.is_available()
+    if GPU_AVAILABLE:
+        print("✓ GPU detected - CuPy enabled")
+        print(f"  Device: {cp.cuda.Device().compute_capability}")
+        mempool = cp.get_default_memory_pool()
+        print(f"  VRAM: {mempool.total_bytes() / 1e9:.1f} GB used")
+except ImportError:
+    GPU_AVAILABLE = False
+    print("⚠ CuPy not found - falling back to CPU")
+    print("  Install with: pip install cupy-cuda12x")
 
 # Scientific computing
 from scipy.stats import bootstrap, ttest_rel
@@ -29,7 +47,6 @@ from sklearn.metrics import (
     accuracy_score, f1_score, confusion_matrix, 
     classification_report
 )
-from sklearn.preprocessing import LabelEncoder
 
 # MNE for CSP
 from mne.decoding import CSP
@@ -37,6 +54,7 @@ from mne.decoding import CSP
 # Visualization
 import matplotlib.pyplot as plt
 import seaborn as sns
+from tqdm import tqdm
 
 # Set random seed for reproducibility
 np.random.seed(42)
@@ -47,9 +65,10 @@ sns.set_palette("husl")
 
 
 class CSPLDAExperiment:
-    """Manages CSP+LDA experiments with multiple configurations."""
+    """GPU-accelerated CSP+LDA experiments with multiple configurations and checkpoint support."""
     
-    def __init__(self, data_path: str, output_dir: str = './results_csp_lda'):
+    def __init__(self, data_path: str, output_dir: str = './results_csp_lda', 
+                 use_gpu: bool = True):
         """
         Initialize experiment.
         
@@ -59,19 +78,36 @@ class CSPLDAExperiment:
             Path to preprocessed data file (.npz or .pkl)
         output_dir : str
             Directory to save results
+        use_gpu : bool
+            Whether to use GPU acceleration (if available)
         """
         self.data_path = Path(data_path)
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
+        # Checkpoint file
+        self.checkpoint_file = self.output_dir / 'experiment_checkpoint.pkl'
+        
+        # GPU settings
+        self.use_gpu = use_gpu and GPU_AVAILABLE
+        if self.use_gpu:
+            print(f"\n{'='*70}")
+            print("GPU ACCELERATION ENABLED")
+            print(f"{'='*70}")
+            # Set CuPy to use device 0 (A100)
+            cp.cuda.Device(0).use()
+            print(f"Active GPU: {cp.cuda.Device()}")
+            print(f"{'='*70}\n")
+        else:
+            print("\nRunning on CPU\n")
+        
         # Experimental parameters
+        # SIMPLIFIED: Focus on combined band (8-30 Hz) with component exploration
         self.frequency_bands = {
-            'mu': (8, 12),
-            'beta': (13, 30),
-            'combined': (8, 30)
+            'combined': (8, 30)  # Standard motor BCI band (mu + beta)
         }
-        self.n_components_list = [4, 6]
-        self.random_seeds = [0, 1, 2, 3, 4]
+        self.n_components_list = [2, 4, 6, 8]  # Component count exploration
+        self.random_seeds = [0, 1, 2]  # 3 trials per config (statistically sufficient)
         self.n_trials = len(self.random_seeds)
         
         # Data split ratios
@@ -89,6 +125,97 @@ class CSPLDAExperiment:
             'Power Grasp', 'Precision Grasp', 'Lateral Grasp',
             'Pronation', 'Supination'
         ]
+    
+    def check_ram_usage(self, context: str = ""):
+        """Monitor RAM usage and warn if getting too high."""
+        mem = psutil.virtual_memory()
+        used_gb = mem.used / 1e9
+        total_gb = mem.total / 1e9
+        percent = mem.percent
+        
+        status = "✓" if percent < 80 else "⚠" if percent < 90 else "❌"
+        
+        print(f"  {status} RAM: {used_gb:.1f}/{total_gb:.1f} GB ({percent:.1f}%) {context}")
+        
+        if percent > 90:
+            print(f"  ❌ CRITICAL: RAM usage very high!")
+            print(f"     Consider reducing batch size or using swap space")
+        elif percent > 80:
+            print(f"  ⚠ WARNING: RAM usage high")
+        
+        return percent
+        
+    def save_checkpoint(self, trial_counter: int, completed_trials: Dict):
+        """
+        Save experiment checkpoint.
+        
+        Parameters:
+        -----------
+        trial_counter : int
+            Current trial number
+        completed_trials : dict
+            Dictionary mapping trial keys to results
+        """
+        try:
+            checkpoint_data = {
+                'trial_counter': trial_counter,
+                'completed_trials': completed_trials,
+                'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
+                'n_completed': len(completed_trials)
+            }
+            
+            with open(self.checkpoint_file, 'wb') as f:
+                pickle.dump(checkpoint_data, f)
+            
+            print(f"  ✓ Checkpoint saved: {len(completed_trials)} trials completed")
+            
+        except Exception as e:
+            print(f"  ⚠ Warning: Could not save checkpoint: {e}")
+    
+    def load_checkpoint(self) -> Tuple[int, Dict, bool]:
+        """
+        Load experiment checkpoint.
+        
+        Returns:
+        --------
+        trial_counter : int
+            Last completed trial number
+        completed_trials : dict
+            Dictionary of completed trials
+        success : bool
+            Whether checkpoint was loaded successfully
+        """
+        if not self.checkpoint_file.exists():
+            return 0, {}, False
+        
+        try:
+            with open(self.checkpoint_file, 'rb') as f:
+                checkpoint_data = pickle.load(f)
+            
+            trial_counter = checkpoint_data['trial_counter']
+            completed_trials = checkpoint_data['completed_trials']
+            timestamp = checkpoint_data.get('timestamp', 'unknown')
+            
+            print(f"\n{'='*60}")
+            print(f"CHECKPOINT FOUND")
+            print(f"{'='*60}")
+            print(f"  Timestamp: {timestamp}")
+            print(f"  Completed trials: {len(completed_trials)}")
+            print(f"  Last trial: {trial_counter}")
+            print(f"{'='*60}\n")
+            
+            return trial_counter, completed_trials, True
+            
+        except Exception as e:
+            print(f"  ⚠ Warning: Could not load checkpoint: {e}")
+            print(f"  Starting from scratch...")
+            return 0, {}, False
+    
+    def clear_checkpoint(self):
+        """Remove checkpoint file to start fresh."""
+        if self.checkpoint_file.exists():
+            self.checkpoint_file.unlink()
+            print("  ✓ Checkpoint cleared")
         
     def load_data(self) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -128,8 +255,6 @@ class CSPLDAExperiment:
                 print(f"  Filter: {metadata.get('filter', 'unknown')}")
                 print(f"  Sampling rate: {metadata.get('fs', 'unknown')} Hz")
                 print(f"  Channel names: {len(metadata.get('channel_names', []))} channels")
-                if 'ica_artifact_removal' in metadata:
-                    print(f"  ICA artifact removal: {metadata['ica_artifact_removal']}")
                 
         elif self.data_path.suffix == '.pkl':
             with open(self.data_path, 'rb') as f:
@@ -142,8 +267,18 @@ class CSPLDAExperiment:
         print(f"\nRaw data loaded:")
         print(f"  X shape: {X.shape}")
         print(f"  y shape: {y.shape}")
+        print(f"  Data size: {X.nbytes / 1e9:.2f} GB")
         print(f"  Unique classes in y: {np.unique(y)}")
-        print(f"  Class distribution: {np.bincount(y.astype(int))}")
+        
+        # Warn about very large datasets
+        if X.nbytes > 50e9:  # 50GB
+            print(f"\n⚠ WARNING: Large dataset ({X.nbytes / 1e9:.1f} GB)")
+            print(f"  This will take longer to process")
+            print(f"  GPU filtering will use batching to manage memory")
+            if self.use_gpu:
+                print(f"  Estimated GPU batch size: ~100-200 trials at a time")
+            else:
+                print(f"  Consider using --no-gpu flag if GPU OOM errors occur")
         
         # Remove rest class (class 0)
         mask = y != 0
@@ -158,7 +293,17 @@ class CSPLDAExperiment:
         print(f"  y shape: {y_filtered.shape}")
         print(f"  Number of classes: {len(np.unique(y_filtered))}")
         print(f"  Class range: {np.min(y_filtered)} to {np.max(y_filtered)}")
-        print(f"  Class distribution: {np.bincount(y_filtered.astype(int))}")
+        
+        # Class distribution check
+        print(f"\n  Class distribution:")
+        unique, counts = np.unique(y_filtered, return_counts=True)
+        for cls, count in zip(unique, counts):
+            pct = 100 * count / len(y_filtered)
+            print(f"    Class {cls}: {count:5d} trials ({pct:5.2f}%)")
+        
+        # Sample check - print first 20 labels
+        print(f"\n  First 20 labels: {y_filtered[:20]}")
+        print(f"  Last 20 labels:  {y_filtered[-20:]}")
         
         # Verify we have 11 classes (0-10)
         assert len(np.unique(y_filtered)) == 11, \
@@ -166,15 +311,103 @@ class CSPLDAExperiment:
         assert np.min(y_filtered) == 0 and np.max(y_filtered) == 10, \
             f"Expected classes 0-10, got {np.min(y_filtered)}-{np.max(y_filtered)}"
         
+        # Check for class imbalance
+        class_imbalance = np.max(counts) / np.min(counts)
+        if class_imbalance > 3:
+            print(f"\n  ⚠ WARNING: Significant class imbalance detected!")
+            print(f"     Max/min ratio: {class_imbalance:.1f}x")
+            print(f"     This may affect classification performance")
+        
         print("\n✓ Data validation passed")
         print("="*70 + "\n")
         
         return X_filtered, y_filtered
     
-    def bandpass_filter(self, X: np.ndarray, low_freq: float, 
-                       high_freq: float, fs: float = 2500) -> np.ndarray:
+    def bandpass_filter_gpu(self, X: np.ndarray, low_freq: float, 
+                           high_freq: float, fs: float = 2500) -> np.ndarray:
         """
-        Apply bandpass filter to EEG data.
+        GPU-accelerated bandpass filter with smart memory management.
+        
+        Parameters:
+        -----------
+        X : np.ndarray
+            EEG data (n_trials, n_channels, n_timepoints)
+        low_freq : float
+            Low cutoff frequency (Hz)
+        high_freq : float
+            High cutoff frequency (Hz)
+        fs : float
+            Sampling frequency (Hz)
+            
+        Returns:
+        --------
+        X_filtered : np.ndarray
+            Filtered EEG data
+        """
+        nyq = fs / 2
+        low = low_freq / nyq
+        high = high_freq / nyq
+        
+        # Design filter on CPU (lightweight operation)
+        b, a = butter(4, [low, high], btype='band')
+        
+        # Convert filter to GPU (small arrays)
+        b_gpu = cp.asarray(b)
+        a_gpu = cp.asarray(a)
+        
+        # Calculate optimal batch size based on GPU memory and data size
+        # Each trial: n_channels × n_timepoints × 4 bytes (float32)
+        bytes_per_trial = X.shape[1] * X.shape[2] * 4
+        
+        # Use ~10GB of GPU memory for batches (leave plenty of headroom)
+        available_memory = 10 * 1024**3  # 10GB in bytes
+        batch_size = max(1, int(available_memory // bytes_per_trial))
+        batch_size = min(batch_size, 200)  # Cap at 200 for efficiency
+        
+        n_trials = X.shape[0]
+        
+        print(f"  Filtering {n_trials} trials on GPU")
+        print(f"  Batch size: {batch_size} trials ({batch_size * bytes_per_trial / 1e9:.2f} GB per batch)")
+        
+        # Pre-allocate output on CPU
+        X_filtered = np.zeros_like(X)
+        
+        # Process in batches - only load one batch to GPU at a time
+        for batch_start in tqdm(range(0, n_trials, batch_size), 
+                               desc="  GPU filtering", leave=False):
+            batch_end = min(batch_start + batch_size, n_trials)
+            
+            # Load ONLY this batch to GPU
+            batch_data = X[batch_start:batch_end]
+            batch_gpu = cp.asarray(batch_data)
+            batch_filtered_gpu = cp.zeros_like(batch_gpu)
+            
+            # Filter each trial in the batch
+            for trial_idx in range(batch_gpu.shape[0]):
+                for ch_idx in range(batch_gpu.shape[1]):
+                    batch_filtered_gpu[trial_idx, ch_idx, :] = \
+                        cp_signal.filtfilt(b_gpu, a_gpu, batch_gpu[trial_idx, ch_idx, :])
+            
+            # Transfer filtered batch back to CPU
+            X_filtered[batch_start:batch_end] = cp.asnumpy(batch_filtered_gpu)
+            
+            # Clean up batch memory
+            del batch_gpu, batch_filtered_gpu
+            
+            # Clear GPU cache every few batches
+            if (batch_start // batch_size) % 5 == 0:
+                cp.get_default_memory_pool().free_all_blocks()
+        
+        # Final cleanup
+        del b_gpu, a_gpu
+        cp.get_default_memory_pool().free_all_blocks()
+        
+        return X_filtered
+    
+    def bandpass_filter_cpu(self, X: np.ndarray, low_freq: float, 
+                           high_freq: float, fs: float = 2500) -> np.ndarray:
+        """
+        CPU-based bandpass filter (fallback).
         
         Parameters:
         -----------
@@ -199,9 +432,46 @@ class CSPLDAExperiment:
         b, a = butter(4, [low, high], btype='band')
         
         X_filtered = np.zeros_like(X)
-        for i in range(X.shape[0]):
+        
+        print(f"  Filtering {X.shape[0]} trials on CPU...")
+        
+        for i in tqdm(range(X.shape[0]), desc="  CPU filtering", leave=False):
             for j in range(X.shape[1]):
                 X_filtered[i, j, :] = filtfilt(b, a, X[i, j, :])
+        
+        return X_filtered
+    
+    def bandpass_filter(self, X: np.ndarray, low_freq: float, 
+                       high_freq: float, fs: float = 2500) -> np.ndarray:
+        """
+        Apply bandpass filter (GPU or CPU based on availability).
+        
+        Parameters:
+        -----------
+        X : np.ndarray
+            EEG data (n_trials, n_channels, n_timepoints)
+        low_freq : float
+            Low cutoff frequency (Hz)
+        high_freq : float
+            High cutoff frequency (Hz)
+        fs : float
+            Sampling frequency (Hz)
+            
+        Returns:
+        --------
+        X_filtered : np.ndarray
+            Filtered EEG data
+        """
+        start_time = time.time()
+        
+        if self.use_gpu:
+            X_filtered = self.bandpass_filter_gpu(X, low_freq, high_freq, fs)
+        else:
+            X_filtered = self.bandpass_filter_cpu(X, low_freq, high_freq, fs)
+        
+        elapsed = time.time() - start_time
+        print(f"  Filtering completed in {elapsed:.2f}s "
+              f"({'GPU' if self.use_gpu else 'CPU'})")
         
         return X_filtered
     
@@ -273,7 +543,7 @@ class CSPLDAExperiment:
                      X_test: np.ndarray, y_test: np.ndarray,
                      n_components: int, seed: int) -> Dict:
         """
-        Train CSP+LDA pipeline.
+        Train CSP+LDA pipeline with AGGRESSIVE MEMORY MANAGEMENT.
         
         Parameters:
         -----------
@@ -291,33 +561,71 @@ class CSPLDAExperiment:
         results : dict
             Training results and metrics
         """
+        # Set numpy random seed for reproducibility
+        np.random.seed(seed)
+        
         # Initialize CSP
-        # For multi-class, CSP will handle one-vs-rest internally
         csp = CSP(
             n_components=n_components,
             reg=None,
             log=True,  # Apply log transform to variance
-            norm_trace=False,
-            random_state=seed
+            norm_trace=False
         )
         
         # Measure training time
         start_time = time.time()
         
+        # Check RAM before fitting
+        self.check_ram_usage("before CSP fit")
+        
         # Fit CSP on training data
+        print("  Fitting CSP...")
         X_train_csp = csp.fit_transform(X_train, y_train)
         
-        # Transform validation and test data
-        X_val_csp = csp.transform(X_val)
-        X_test_csp = csp.transform(X_test)
+        # CRITICAL: Delete original training data immediately
+        del X_train
+        gc.collect()
+        self.check_ram_usage("after CSP fit")
+        
+        # Transform validation data IN BATCHES to avoid RAM spike
+        print("  Transforming validation data...")
+        batch_size = 1000  # Process 1000 trials at a time
+        n_val = X_val.shape[0]
+        n_features = X_train_csp.shape[1]
+        
+        X_val_csp = np.zeros((n_val, n_features), dtype=np.float32)
+        
+        for i in range(0, n_val, batch_size):
+            end_idx = min(i + batch_size, n_val)
+            X_val_csp[i:end_idx] = csp.transform(X_val[i:end_idx])
+        
+        # Delete original val data
+        del X_val
+        gc.collect()
+        
+        # Transform test data IN BATCHES
+        print("  Transforming test data...")
+        n_test = X_test.shape[0]
+        X_test_csp = np.zeros((n_test, n_features), dtype=np.float32)
+        
+        for i in range(0, n_test, batch_size):
+            end_idx = min(i + batch_size, n_test)
+            X_test_csp[i:end_idx] = csp.transform(X_test[i:end_idx])
+        
+        # Delete original test data
+        del X_test
+        gc.collect()
+        self.check_ram_usage("after CSP transform")
         
         # Initialize and train LDA
+        print("  Training LDA...")
         lda = LinearDiscriminantAnalysis()
         lda.fit(X_train_csp, y_train)
         
         training_time = time.time() - start_time
         
         # Make predictions
+        print("  Making predictions...")
         y_train_pred = lda.predict(X_train_csp)
         y_val_pred = lda.predict(X_val_csp)
         y_test_pred = lda.predict(X_test_csp)
@@ -347,12 +655,18 @@ class CSPLDAExperiment:
             'training_time_sec': training_time,
             'inference_time_per_sample': inference_time,
             
-            # Model artifacts (save for analysis)
-            'csp_patterns': csp.patterns_,
-            'csp_filters': csp.filters_,
-            'lda_coef': lda.coef_,
-            'lda_intercept': lda.intercept_,
+            # Model artifacts (store as float32 to save memory)
+            'csp_patterns': csp.patterns_.astype(np.float32),
+            'csp_filters': csp.filters_.astype(np.float32),
+            'lda_coef': lda.coef_.astype(np.float32),
+            'lda_intercept': lda.intercept_.astype(np.float32),
         }
+        
+        # Clean up CSP features
+        del X_train_csp, X_val_csp, X_test_csp
+        del y_train_pred, y_val_pred, y_test_pred
+        gc.collect()
+        self.check_ram_usage("after LDA training")
         
         return results
     
@@ -360,16 +674,16 @@ class CSPLDAExperiment:
                         band_name: str, n_components: int, 
                         seed: int) -> Dict:
         """
-        Run a single experimental trial.
+        Run a single experimental trial with MEMORY-EFFICIENT processing.
         
         Parameters:
         -----------
         X : np.ndarray
-            Raw EEG data (already filtered in preprocessing, but we re-filter for specific bands)
+            ALREADY FILTERED EEG data (8-30 Hz from preprocessing)
         y : np.ndarray
             Labels (0-10)
         band_name : str
-            Frequency band ('mu', 'beta', 'combined')
+            Frequency band (ignored - data already filtered)
         n_components : int
             Number of CSP components
         seed : int
@@ -384,11 +698,13 @@ class CSPLDAExperiment:
         print(f"Trial: {band_name}, {n_components} components, seed {seed}")
         print(f"{'='*60}")
         
-        # Apply bandpass filter for specific band
-        # (preprocessing used 8-30 Hz, so we need to re-filter for mu and beta)
-        low_freq, high_freq = self.frequency_bands[band_name]
-        print(f"Applying {low_freq}-{high_freq} Hz bandpass filter...")
-        X_filtered = self.bandpass_filter(X, low_freq, high_freq)
+        # Check initial RAM
+        self.check_ram_usage("at trial start")
+        
+        # DATA ALREADY FILTERED to 8-30 Hz during preprocessing!
+        # Skip redundant filtering step
+        print(f"Using preprocessed data (already filtered to 8-30 Hz)")
+        X_filtered = X  # No filtering needed!
         
         # Split data
         print("Splitting data...")
@@ -398,12 +714,19 @@ class CSPLDAExperiment:
         print(f"Train: {X_train.shape[0]}, Val: {X_val.shape[0]}, "
               f"Test: {X_test.shape[0]}")
         
-        # Train model
+        # Check RAM after split
+        self.check_ram_usage("after data split")
+        
+        # Train model (this function now handles its own memory management)
         print("Training CSP+LDA...")
         results = self.train_csp_lda(
             X_train, y_train, X_val, y_val, X_test, y_test,
             n_components, seed
         )
+        
+        # Clean up split data (train_csp_lda already deleted X_train, X_val, X_test)
+        del y_train, y_val, y_test
+        gc.collect()
         
         # Add configuration info
         trial_data = {
@@ -420,11 +743,23 @@ class CSPLDAExperiment:
         print(f"  Test F1 (macro): {results['test_f1_macro']:.4f}")
         print(f"  Training time:  {results['training_time_sec']:.2f}s")
         
+        # Final RAM check
+        self.check_ram_usage("at trial end")
+        
+        # GPU memory status
+        if self.use_gpu:
+            mempool = cp.get_default_memory_pool()
+            print(f"  GPU memory: {mempool.used_bytes() / 1e9:.2f} GB used, "
+                  f"{mempool.total_bytes() / 1e9:.2f} GB total")
+        
+        # Force garbage collection before next trial
+        gc.collect()
+        
         return trial_data
     
-    def run_all_experiments(self, X: np.ndarray, y: np.ndarray):
+    def run_all_experiments(self, X: np.ndarray, y: np.ndarray, resume: bool = True):
         """
-        Run all experimental configurations.
+        Run all experimental configurations with checkpoint support.
         
         Parameters:
         -----------
@@ -432,34 +767,98 @@ class CSPLDAExperiment:
             Raw EEG data
         y : np.ndarray
             Labels (0-10)
+        resume : bool
+            Whether to resume from checkpoint if available
         """
-        total_configs = len(self.frequency_bands) * len(self.n_components_list)
-        total_trials = total_configs * self.n_trials
+        # Try to load checkpoint
+        trial_counter, completed_trials, checkpoint_loaded = self.load_checkpoint()
+        
+        if not resume:
+            print("  Ignoring checkpoint (resume=False)")
+            trial_counter = 0
+            completed_trials = {}
+            checkpoint_loaded = False
+        
+        # Set up experiment configurations
+        configs = []
+        for band_name in self.frequency_bands.keys():
+            for n_components in self.n_components_list:
+                for seed in self.random_seeds:
+                    configs.append({
+                        'band': band_name,
+                        'n_components': n_components,
+                        'seed': seed
+                    })
+        
+        total_trials = len(configs)
         
         print(f"\n{'='*60}")
         print(f"Starting CSP+LDA Experiments")
         print(f"{'='*60}")
-        print(f"Total configurations: {total_configs}")
+        print(f"Total configurations: {len(self.frequency_bands) * len(self.n_components_list)}")
         print(f"Trials per configuration: {self.n_trials}")
-        print(f"Total trials: {total_trials}\n")
+        print(f"Total trials: {total_trials}")
+        print(f"Already completed: {len(completed_trials)}")
+        print(f"Remaining: {total_trials - len(completed_trials)}")
+        print(f"GPU acceleration: {'ENABLED' if self.use_gpu else 'DISABLED'}")
+        print(f"{'='*60}\n")
         
-        trial_count = 0
+        if len(completed_trials) >= total_trials:
+            print("✓ All trials already completed!")
+            # Load results from completed trials
+            self.trial_results = list(completed_trials.values())
+            return
         
-        for band_name in self.frequency_bands.keys():
-            for n_components in self.n_components_list:
-                for seed in self.random_seeds:
-                    trial_count += 1
-                    print(f"\n[Trial {trial_count}/{total_trials}]")
-                    
-                    trial_data = self.run_single_trial(
-                        X, y, band_name, n_components, seed
-                    )
-                    
-                    self.trial_results.append(trial_data)
+        overall_start = time.time()
+        
+        for trial_idx, config in enumerate(configs, 1):
+            # Create unique trial key
+            trial_key = f"{config['band']}_{config['n_components']}_seed{config['seed']}"
+            
+            # Skip if already completed
+            if trial_key in completed_trials:
+                print(f"\n[Trial {trial_idx}/{total_trials}] - SKIPPED (already completed)")
+                print(f"  Configuration: {trial_key}")
+                continue
+            
+            print(f"\n[Trial {trial_idx}/{total_trials}]")
+            
+            try:
+                # Run trial
+                trial_data = self.run_single_trial(
+                    X, y, 
+                    config['band'], 
+                    config['n_components'], 
+                    config['seed']
+                )
+                
+                # Store result
+                completed_trials[trial_key] = trial_data
+                self.trial_results.append(trial_data)
+                trial_counter = trial_idx
+                
+                # Save checkpoint after each successful trial
+                self.save_checkpoint(trial_counter, completed_trials)
+                
+            except Exception as e:
+                print(f"\n❌ ERROR in trial {trial_idx}: {e}")
+                print(f"  Configuration: {trial_key}")
+                print(f"  Checkpoint saved up to trial {trial_counter}")
+                print(f"  You can resume from this point")
+                raise
+        
+        overall_time = time.time() - overall_start
         
         print(f"\n{'='*60}")
         print("All trials completed!")
+        print(f"Total time: {overall_time:.2f}s ({overall_time/60:.1f} min)")
+        print(f"Average per trial: {overall_time/total_trials:.2f}s")
         print(f"{'='*60}\n")
+        
+        # Clear checkpoint after successful completion
+        if len(completed_trials) >= total_trials:
+            print("✓ Clearing checkpoint (all trials complete)")
+            self.clear_checkpoint()
     
     def compute_confidence_interval(self, data: np.ndarray, 
                                    confidence_level: float = 0.95) -> Tuple:
@@ -692,12 +1091,12 @@ class CSPLDAExperiment:
                    fmt='none', ecolor='black', capsize=5, capthick=2)
         
         # Formatting
-        ax.set_xlabel('Configuration', fontsize=12, fontweight='bold')
+        ax.set_xlabel('Number of CSP Components', fontsize=12, fontweight='bold')
         ax.set_ylabel('Test Accuracy (%)', fontsize=12, fontweight='bold')
-        ax.set_title('CSP+LDA: Frequency Band and Component Count Comparison',
+        ax.set_title('CSP+LDA: Component Count Comparison (8-30 Hz Band)',
                     fontsize=14, fontweight='bold', pad=20)
         ax.set_xticks(x_pos)
-        ax.set_xticklabels(configs, fontsize=10)
+        ax.set_xticklabels([f'{s["n_components"]}' for s in self.config_summaries], fontsize=10)
         ax.grid(axis='y', alpha=0.3, linestyle='--')
         ax.set_ylim([0, 100])
         
@@ -716,75 +1115,61 @@ class CSPLDAExperiment:
         print("✓ Saved plot 1: Parameter comparison")
         plt.close()
     
-    def plot_frequency_band_ablation(self):
-        """Plot 2: Frequency band ablation (grouped bars)."""
+    def plot_component_ablation(self):
+        """Plot 2: Component count ablation study."""
         fig, ax = plt.subplots(figsize=(10, 6))
         
-        bands = list(self.frequency_bands.keys())
+        # Get data for all component counts
         n_comp_list = self.n_components_list
         
-        x = np.arange(len(bands))
-        width = 0.35
+        means = []
+        ci_lows = []
+        ci_highs = []
         
-        # Prepare data for each component count
-        data_by_comp = {comp: {'means': [], 'ci_lows': [], 'ci_highs': []} 
-                       for comp in n_comp_list}
+        for n_comp in n_comp_list:
+            summary = next(s for s in self.config_summaries 
+                         if s['n_components'] == n_comp)
+            means.append(summary['test_acc_mean'] * 100)
+            ci_lows.append(summary['test_acc_ci_low'] * 100)
+            ci_highs.append(summary['test_acc_ci_high'] * 100)
         
-        for band in bands:
-            for n_comp in n_comp_list:
-                summary = next(s for s in self.config_summaries 
-                             if s['band'] == band and 
-                             s['n_components'] == n_comp)
-                data_by_comp[n_comp]['means'].append(
-                    summary['test_acc_mean'] * 100
-                )
-                data_by_comp[n_comp]['ci_lows'].append(
-                    summary['test_acc_ci_low'] * 100
-                )
-                data_by_comp[n_comp]['ci_highs'].append(
-                    summary['test_acc_ci_high'] * 100
-                )
+        means = np.array(means)
+        ci_lows = np.array(ci_lows)
+        ci_highs = np.array(ci_highs)
         
-        # Plot grouped bars
-        colors = ['#1f77b4', '#ff7f0e']
-        for i, (n_comp, color) in enumerate(zip(n_comp_list, colors)):
-            means = np.array(data_by_comp[n_comp]['means'])
-            ci_lows = np.array(data_by_comp[n_comp]['ci_lows'])
-            ci_highs = np.array(data_by_comp[n_comp]['ci_highs'])
-            
-            yerr_low = means - ci_lows
-            yerr_high = ci_highs - means
-            
-            offset = width * (i - 0.5)
-            bars = ax.bar(x + offset, means, width, label=f'{n_comp} components',
-                         color=color, alpha=0.7, edgecolor='black', linewidth=1.2)
-            ax.errorbar(x + offset, means, yerr=[yerr_low, yerr_high],
-                       fmt='none', ecolor='black', capsize=5, capthick=2)
-            
-            # Add value labels
-            for bar, mean in zip(bars, means):
-                height = bar.get_height()
-                ax.text(bar.get_x() + bar.get_width()/2., height + 1,
-                       f'{mean:.1f}%', ha='center', va='bottom',
-                       fontsize=9, fontweight='bold')
+        yerr_low = means - ci_lows
+        yerr_high = ci_highs - means
+        
+        # Create line plot with error bars
+        x = np.array(n_comp_list)
+        
+        ax.errorbar(x, means, yerr=[yerr_low, yerr_high],
+                   fmt='o-', linewidth=2.5, markersize=10,
+                   color='steelblue', ecolor='black',
+                   capsize=8, capthick=2, label='Test Accuracy')
+        
+        # Add value labels
+        for xi, mean in zip(x, means):
+            ax.text(xi, mean + 2, f'{mean:.1f}%', 
+                   ha='center', va='bottom',
+                   fontsize=11, fontweight='bold')
         
         # Formatting
-        ax.set_xlabel('Frequency Band', fontsize=12, fontweight='bold')
+        ax.set_xlabel('Number of CSP Components', fontsize=12, fontweight='bold')
         ax.set_ylabel('Test Accuracy (%)', fontsize=12, fontweight='bold')
-        ax.set_title('CSP+LDA: Frequency Band Comparison',
+        ax.set_title('CSP+LDA: Effect of Component Count on Classification Accuracy',
                     fontsize=14, fontweight='bold', pad=20)
         ax.set_xticks(x)
-        ax.set_xticklabels([b.capitalize() for b in bands], fontsize=11)
-        ax.legend(fontsize=10, loc='lower right')
-        ax.grid(axis='y', alpha=0.3, linestyle='--')
+        ax.grid(True, alpha=0.3, linestyle='--')
         ax.set_ylim([0, 100])
+        ax.legend(fontsize=10, loc='lower right')
         
         plt.tight_layout()
-        plt.savefig(self.output_dir / 'plot2_frequency_band_ablation.png',
+        plt.savefig(self.output_dir / 'plot2_component_ablation.png',
                    dpi=300, bbox_inches='tight')
-        plt.savefig(self.output_dir / 'plot2_frequency_band_ablation.pdf',
+        plt.savefig(self.output_dir / 'plot2_component_ablation.pdf',
                    bbox_inches='tight')
-        print("✓ Saved plot 2: Frequency band ablation")
+        print("✓ Saved plot 2: Component count ablation")
         plt.close()
     
     def plot_confusion_matrix(self):
@@ -826,33 +1211,26 @@ class CSPLDAExperiment:
         plt.close()
     
     def plot_per_class_f1(self):
-        """Plot 4: Per-class F1 comparison."""
+        """Plot 4: Per-class F1 comparison across component counts."""
         fig, ax = plt.subplots(figsize=(14, 6))
         
-        # Find best n_components for each band
-        bands = list(self.frequency_bands.keys())
-        
-        # Determine best component count per band
-        best_configs = {}
-        for band in bands:
-            band_configs = [s for s in self.config_summaries 
-                          if s['band'] == band]
-            best_config = max(band_configs, key=lambda x: x['test_acc_mean'])
-            best_configs[band] = best_config
+        n_comp_list = self.n_components_list
         
         x = np.arange(len(self.class_names))
-        width = 0.25
-        colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+        width = 0.8 / len(n_comp_list)  # Dynamic width based on number of components
         
-        # Plot bars for each band
-        for i, (band, color) in enumerate(zip(bands, colors)):
-            config = best_configs[band]
+        colors = plt.cm.Set2(np.linspace(0, 1, len(n_comp_list)))
+        
+        # Plot bars for each component count
+        for i, (n_comp, color) in enumerate(zip(n_comp_list, colors)):
+            config = next(s for s in self.config_summaries 
+                         if s['n_components'] == n_comp)
             means = config['test_f1_per_class_mean']
             stds = config['test_f1_per_class_std']
             
-            offset = width * (i - 1)
+            offset = width * (i - (len(n_comp_list) - 1) / 2)
             bars = ax.bar(x + offset, means, width, 
-                         label=f"{band.capitalize()} ({config['n_components']} comp)",
+                         label=f"{n_comp} components",
                          color=color, alpha=0.7, edgecolor='black', 
                          linewidth=1)
             ax.errorbar(x + offset, means, yerr=stds, fmt='none',
@@ -861,7 +1239,7 @@ class CSPLDAExperiment:
         # Formatting
         ax.set_xlabel('Movement Class', fontsize=12, fontweight='bold')
         ax.set_ylabel('F1 Score', fontsize=12, fontweight='bold')
-        ax.set_title('Per-Class F1 Score Comparison Across Frequency Bands',
+        ax.set_title('Per-Class F1 Score: Effect of CSP Component Count',
                     fontsize=14, fontweight='bold', pad=20)
         ax.set_xticks(x)
         ax.set_xticklabels(self.class_names, rotation=45, ha='right', fontsize=10)
@@ -884,7 +1262,7 @@ class CSPLDAExperiment:
         print("="*60)
         
         self.plot_parameter_comparison()
-        self.plot_frequency_band_ablation()
+        self.plot_component_ablation()  # Updated function name
         self.plot_confusion_matrix()
         self.plot_per_class_f1()
         
@@ -926,7 +1304,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(
-        description='CSP+LDA Experiment for EEG Movement Classification'
+        description='GPU-Accelerated CSP+LDA Experiment for EEG Movement Classification'
     )
     parser.add_argument(
         '--data_path',
@@ -940,20 +1318,42 @@ def main():
         default='./results_csp_lda',
         help='Output directory for results'
     )
+    parser.add_argument(
+        '--no-gpu',
+        action='store_true',
+        help='Disable GPU acceleration (use CPU only)'
+    )
+    parser.add_argument(
+        '--no-resume',
+        action='store_true',
+        help='Start from scratch (ignore checkpoint)'
+    )
+    parser.add_argument(
+        '--clear-checkpoint',
+        action='store_true',
+        help='Clear checkpoint and exit'
+    )
     
     args = parser.parse_args()
     
     # Initialize experiment
     experiment = CSPLDAExperiment(
         data_path=args.data_path,
-        output_dir=args.output_dir
+        output_dir=args.output_dir,
+        use_gpu=not args.no_gpu
     )
+    
+    # Clear checkpoint if requested
+    if args.clear_checkpoint:
+        experiment.clear_checkpoint()
+        print("Checkpoint cleared. Exiting.")
+        return
     
     # Load data
     X, y = experiment.load_data()
     
-    # Run all experiments
-    experiment.run_all_experiments(X, y)
+    # Run all experiments (with resume support)
+    experiment.run_all_experiments(X, y, resume=not args.no_resume)
     
     # Aggregate results
     experiment.aggregate_results()
@@ -974,6 +1374,11 @@ def main():
     print("EXPERIMENT COMPLETE!")
     print("="*60)
     print(f"\nResults saved to: {experiment.output_dir}")
+    
+    # Final GPU cleanup
+    if experiment.use_gpu:
+        cp.get_default_memory_pool().free_all_blocks()
+        print("\nGPU memory freed")
 
 
 if __name__ == '__main__':

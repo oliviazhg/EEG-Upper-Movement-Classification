@@ -1,0 +1,7 @@
+config1,config2,mean_diff,t_statistic,p_value,cohens_d,significant
+combined_2comp,combined_4comp,,,,0,False
+combined_2comp,combined_6comp,,,,0,False
+combined_2comp,combined_8comp,,,,0,False
+combined_4comp,combined_6comp,,,,0,False
+combined_4comp,combined_8comp,,,,0,False
+combined_6comp,combined_8comp,,,,0,False
