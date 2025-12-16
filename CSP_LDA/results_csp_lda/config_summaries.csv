@@ -1,5 +1,0 @@
-band,n_components,test_acc_mean,test_acc_ci_low,test_acc_ci_high,test_acc_std,test_f1_mean,test_f1_ci_low,test_f1_ci_high,test_f1_std
-combined,2,,,,,,,,
-combined,4,,,,,,,,
-combined,6,,,,,,,,
-combined,8,0.13880790411402658,0.13880790411402658,0.13880790411402658,,0.12661066157252698,0.12661066157252698,0.12661066157252698,

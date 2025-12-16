@@ -1,2 +1,0 @@
-band,n_components,seed,train_accuracy,val_accuracy,test_accuracy,train_f1_macro,val_f1_macro,test_f1_macro,training_time_sec,inference_time_per_sample
-combined,8,2,0.1443052035963481,0.12846265997084075,0.13880790411402658,0.132223904208454,0.11733074844114481,0.12661066157252698,262.5371277332306,0.00010180473327636719

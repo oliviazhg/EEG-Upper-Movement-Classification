@@ -106,7 +106,7 @@ class CSPLDAExperiment:
         self.frequency_bands = {
             'combined': (8, 30)  # Standard motor BCI band (mu + beta)
         }
-        self.n_components_list = [2, 4, 6, 8]  # Component count exploration
+        self.n_components_list = [4]  # Run only 4 components
         self.random_seeds = [0, 1, 2]  # 3 trials per config (statistically sufficient)
         self.n_trials = len(self.random_seeds)
         
