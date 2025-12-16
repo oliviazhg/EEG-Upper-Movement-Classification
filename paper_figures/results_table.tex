@@ -1,0 +1,20 @@
+
+\begin{table}[htbp]
+\caption{Classification Performance Summary}
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Method} & \textbf{Parameters} & \textbf{Test Acc (\%)} & \textbf{Test F1 (\%)} \\
+\hline
+Random Forest & n=200, mf=26 & 26.72 [26.26, 27.18] & 26.63 [26.14, 27.12] \\
+\hline
+SVM & C=100, $\gamma$=0.01 & 24.08 [23.78, 24.39] & 24.19 \\
+\hline
+CSP+LDA$^*$ & 8-30 Hz, 8 comp & 13.80 $\pm$ 0.11 & 12.67 $\pm$ 0.01 \\
+\hline
+\multicolumn{4}{l}{$^*$Based on 2 trials; error shown as $\pm$1 std} \\
+\hline
+\end{tabular}
+\label{tab:results}
+\end{center}
+\end{table}
